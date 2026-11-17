@@ -194,7 +194,10 @@ fun AssistantCard(
             fontSize = 36.sp
         )
 
-        CharacterArtwork(color)
+        CharacterArtwork(
+    color = color,
+    modifier = Modifier.weight(1f)
+)
 
         Text(
             name,
