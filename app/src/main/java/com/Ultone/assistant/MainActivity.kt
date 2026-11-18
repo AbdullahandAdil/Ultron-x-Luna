@@ -4,7 +4,7 @@ package com.ultone.assistant
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,10 +15,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
@@ -30,7 +29,6 @@ private val Purple = Color(0xFFD044FF)
 private val White = Color.White
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -54,51 +52,38 @@ fun AssistantApp() {
     var appearance by remember { mutableStateOf("Character") }
 
     when (page) {
+        "welcome" -> WelcomeScreen(
+            onSelect = { assistant ->
+                selectedAssistant = assistant
+                page = "customize"
+            }
+        )
 
-        "welcome" -> {
-            WelcomeScreen(
-                onSelect = { assistant ->
-                    selectedAssistant = assistant
-                    page = "customize"
-                }
-            )
-        }
+        "customize" -> CustomizeScreen(
+            assistant = selectedAssistant,
+            initialName = userName,
+            initialAppearance = appearance,
+            onBack = { page = "welcome" },
+            onContinue = { name, selectedAppearance ->
+                userName = name
+                appearance = selectedAppearance
+                page = "home"
+            }
+        )
 
-        "customize" -> {
-            CustomizeScreen(
-                assistant = selectedAssistant,
-                initialName = userName,
-                initialAppearance = appearance,
-                onBack = {
-                    page = "welcome"
-                },
-                onContinue = { name, selectedAppearance ->
-                    userName = name
-                    appearance = selectedAppearance
-                    page = "home"
-                }
-            )
-        }
-
-        "home" -> {
-            HomeScreen(
-                assistant = selectedAssistant,
-                userName = userName,
-                appearance = appearance,
-                onBack = {
-                    page = "welcome"
-                }
-            )
-        }
+        "home" -> HomeScreen(
+            assistant = selectedAssistant,
+            userName = userName,
+            appearance = appearance,
+            onBack = { page = "welcome" }
+        )
     }
 }
 
 // ---------------- WELCOME SCREEN ----------------
 
 @Composable
-fun WelcomeScreen(
-    onSelect: (String) -> Unit
-) {
+fun WelcomeScreen(onSelect: (String) -> Unit) {
 
     BoxWithConstraints(
         modifier = Modifier
@@ -114,16 +99,16 @@ fun WelcomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
+                .padding(horizontal = 14.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // HEADER
+            // OFFICIAL LOGO HEADER
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp),
+                    .height(94.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -131,49 +116,46 @@ fun WelcomeScreen(
                 Text(
                     "☰",
                     color = Blue,
-                    fontSize = 30.sp
+                    fontSize = 29.sp
                 )
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    Text(
-                        "ULTRON",
-                        color = Gold,
-                        fontSize = 30.sp,
-                        fontWeight = FontWeight.Black
+                    Image(
+                        painter = painterResource(R.drawable.app_logo),
+                        contentDescription = "Ultron x Luna Logo",
+                        modifier = Modifier.size(55.dp),
+                        contentScale = ContentScale.Fit
                     )
 
                     Text(
-                        "AI Assistant",
+                        "Personal AI Assistant",
                         color = White,
-                        fontSize = 18.sp
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
 
                 Text(
                     "⚙",
                     color = Blue,
-                    fontSize = 29.sp
+                    fontSize = 27.sp
                 )
             }
 
-            Spacer(Modifier.height(20.dp))
-
-            // TITLE
+            Spacer(Modifier.height(12.dp))
 
             Text(
                 "CHOOSE YOUR ASSISTANT",
                 color = White,
                 fontSize = 16.sp,
-                letterSpacing = 3.sp,
+                letterSpacing = 2.sp,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(Modifier.height(24.dp))
-
-            // CHARACTER CARDS
+            Spacer(Modifier.height(22.dp))
 
             Row(
                 modifier = Modifier
@@ -186,26 +168,22 @@ fun WelcomeScreen(
                     name = "ULTRON",
                     tagline = "Power • Logic • Intelligence",
                     color = Blue,
+                    imageRes = R.drawable.ultron_character,
                     modifier = Modifier.weight(1f),
-                    onClick = {
-                        onSelect("ULTRON")
-                    }
+                    onClick = { onSelect("ULTRON") }
                 )
 
                 AssistantCard(
                     name = "LUNA",
                     tagline = "Kindness • Care • Support",
                     color = Purple,
+                    imageRes = R.drawable.luna_character,
                     modifier = Modifier.weight(1f),
-                    onClick = {
-                        onSelect("LUNA")
-                    }
+                    onClick = { onSelect("LUNA") }
                 )
             }
 
             Spacer(Modifier.weight(1f))
-
-            // FOOTER
 
             Text(
                 "✦  TOGETHER, ALWAYS...  ✦",
@@ -215,18 +193,19 @@ fun WelcomeScreen(
                 textAlign = TextAlign.Center
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(18.dp))
         }
     }
 }
 
-// ---------------- ASSISTANT CARD ----------------
+// ---------------- CHARACTER CARDS ----------------
 
 @Composable
 fun AssistantCard(
     name: String,
     tagline: String,
     color: Color,
+    imageRes: Int,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -238,7 +217,7 @@ fun AssistantCard(
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        color.copy(alpha = 0.20f),
+                        color.copy(alpha = 0.22f),
                         Color(0xFF080D20),
                         color.copy(alpha = 0.10f)
                     )
@@ -249,7 +228,7 @@ fun AssistantCard(
                 color,
                 RoundedCornerShape(22.dp)
             )
-            .padding(9.dp),
+            .padding(8.dp),
 
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
@@ -258,12 +237,20 @@ fun AssistantCard(
         Text(
             if (name == "ULTRON") "◈" else "✧",
             color = color,
-            fontSize = 35.sp
+            fontSize = 29.sp
         )
 
-        CharacterArtwork(
-            color = color,
-            modifier = Modifier.weight(1f)
+        // REAL CHARACTER IMAGE
+
+        Image(
+            painter = painterResource(imageRes),
+            contentDescription = "$name Character",
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(vertical = 5.dp)
+                .clip(RoundedCornerShape(14.dp)),
+            contentScale = ContentScale.Crop
         )
 
         Text(
@@ -282,12 +269,12 @@ fun AssistantCard(
             lineHeight = 14.sp
         )
 
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(7.dp))
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp)
+                .height(46.dp)
                 .clip(RoundedCornerShape(30.dp))
                 .background(color.copy(alpha = 0.12f))
                 .border(
@@ -295,105 +282,15 @@ fun AssistantCard(
                     color,
                     RoundedCornerShape(30.dp)
                 )
-                .clickable {
-                    onClick()
-                },
-
+                .clickable { onClick() },
             contentAlignment = Alignment.Center
         ) {
 
             Text(
                 "Select  ›",
                 color = White,
-                fontSize = 19.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
-
-// ---------------- CHARACTER PLACEHOLDER ----------------
-
-@Composable
-fun CharacterArtwork(
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-
-    Box(
-        modifier = modifier.fillMaxWidth(),
-        contentAlignment = Alignment.Center
-    ) {
-
-        Canvas(
-            modifier = Modifier.fillMaxSize()
-        ) {
-
-            val center = Offset(
-                size.width / 2,
-                size.height * 0.35f
-            )
-
-            // Glow
-
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        color.copy(alpha = 0.50f),
-                        Color.Transparent
-                    ),
-                    center = center,
-                    radius = size.width * 0.65f
-                ),
-                radius = size.width * 0.65f,
-                center = center
-            )
-
-            // Head
-
-            drawCircle(
-                color = color.copy(alpha = 0.85f),
-                radius = size.width * 0.17f,
-                center = Offset(
-                    center.x,
-                    center.y
-                )
-            )
-
-            // Body
-
-            drawRoundRect(
-                brush = Brush.verticalGradient(
-                    listOf(
-                        color.copy(alpha = 0.65f),
-                        Color(0xFF071020)
-                    )
-                ),
-                topLeft = Offset(
-                    size.width * 0.19f,
-                    size.height * 0.48f
-                ),
-                size = Size(
-                    size.width * 0.62f,
-                    size.height * 0.48f
-                ),
-                cornerRadius = CornerRadius(45f)
-            )
-
-            // Energy lines
-
-            drawLine(
-                color = color.copy(alpha = 0.7f),
-                start = Offset(0f, size.height * 0.72f),
-                end = Offset(size.width * 0.28f, size.height * 0.58f),
-                strokeWidth = 3f
-            )
-
-            drawLine(
-                color = color.copy(alpha = 0.7f),
-                start = Offset(size.width, size.height * 0.72f),
-                end = Offset(size.width * 0.72f, size.height * 0.58f),
-                strokeWidth = 3f
             )
         }
     }
@@ -404,7 +301,7 @@ fun CharacterArtwork(
 @Composable
 fun BackgroundEnergy() {
 
-    Canvas(
+    androidx.compose.foundation.Canvas(
         modifier = Modifier.fillMaxSize()
     ) {
 
@@ -418,35 +315,36 @@ fun BackgroundEnergy() {
             )
         )
 
-        // Stars
-
         for (i in 0..55) {
-
             val x = (i * 83f) % size.width
             val y = (i * 137f) % size.height
 
             drawCircle(
                 color = White.copy(alpha = 0.35f),
                 radius = 1.2f,
-                center = Offset(x, y)
+                center = androidx.compose.ui.geometry.Offset(x, y)
             )
         }
 
-        // Blue energy line
-
         drawLine(
             color = Blue.copy(alpha = 0.55f),
-            start = Offset(0f, size.height * 0.32f),
-            end = Offset(size.width * 0.48f, size.height * 0.32f),
+            start = androidx.compose.ui.geometry.Offset(
+                0f, size.height * 0.32f
+            ),
+            end = androidx.compose.ui.geometry.Offset(
+                size.width * 0.48f, size.height * 0.32f
+            ),
             strokeWidth = 2f
         )
 
-        // Purple energy line
-
         drawLine(
             color = Purple.copy(alpha = 0.55f),
-            start = Offset(size.width * 0.52f, size.height * 0.32f),
-            end = Offset(size.width, size.height * 0.32f),
+            start = androidx.compose.ui.geometry.Offset(
+                size.width * 0.52f, size.height * 0.32f
+            ),
+            end = androidx.compose.ui.geometry.Offset(
+                size.width, size.height * 0.32f
+            ),
             strokeWidth = 2f
         )
     }
@@ -478,7 +376,6 @@ fun CustomizeScreen(
             .fillMaxSize()
             .background(Dark)
             .padding(22.dp),
-
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -487,9 +384,7 @@ fun CustomizeScreen(
             color = color,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable {
-                    onBack()
-                }
+                .clickable { onBack() }
         )
 
         Spacer(Modifier.height(30.dp))
@@ -511,13 +406,7 @@ fun CustomizeScreen(
 
         Spacer(Modifier.height(18.dp))
 
-        // APPEARANCE OPTIONS
-
-        listOf(
-            "Character",
-            "Globe",
-            "Energy Core"
-        ).forEach { option ->
+        listOf("Character", "Globe", "Energy Core").forEach { option ->
 
             Row(
                 modifier = Modifier
@@ -530,19 +419,14 @@ fun CustomizeScreen(
                         if (appearance == option) color else Color.DarkGray,
                         RoundedCornerShape(14.dp)
                     )
-                    .clickable {
-                        appearance = option
-                    }
+                    .clickable { appearance = option }
                     .padding(12.dp),
-
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
                 RadioButton(
                     selected = appearance == option,
-                    onClick = {
-                        appearance = option
-                    },
+                    onClick = { appearance = option },
                     colors = RadioButtonDefaults.colors(
                         selectedColor = color
                     )
@@ -568,14 +452,10 @@ fun CustomizeScreen(
 
         OutlinedTextField(
             value = userName,
-            onValueChange = {
-                userName = it
-            },
+            onValueChange = { userName = it },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            label = {
-                Text("Enter your name")
-            },
+            label = { Text("Enter your name") },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = color,
                 unfocusedBorderColor = Color.Gray,
@@ -590,7 +470,6 @@ fun CustomizeScreen(
         Spacer(Modifier.height(20.dp))
 
         if (userName.isNotBlank()) {
-
             Text(
                 "Hello, ${userName.trim()}!",
                 color = color,
@@ -603,10 +482,7 @@ fun CustomizeScreen(
 
         Button(
             onClick = {
-                onContinue(
-                    userName.trim(),
-                    appearance
-                )
+                onContinue(userName.trim(), appearance)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -642,16 +518,22 @@ fun HomeScreen(
             .fillMaxSize()
             .background(Dark)
             .padding(22.dp),
-
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
+        Image(
+            painter = painterResource(R.drawable.app_logo),
+            contentDescription = "Ultron x Luna Logo",
+            modifier = Modifier.size(75.dp),
+            contentScale = ContentScale.Fit
+        )
+
+        Spacer(Modifier.height(8.dp))
+
         Text(
-            "ULTRON AI ASSISTANT",
-            color = Gold,
-            fontSize = 23.sp,
-            fontWeight = FontWeight.Bold
+            "Personal AI Assistant",
+            color = White,
+            fontSize = 15.sp
         )
 
         Spacer(Modifier.height(45.dp))
@@ -683,14 +565,12 @@ fun HomeScreen(
             fontSize = 22.sp
         )
 
-        Spacer(Modifier.height(45.dp))
+        Spacer(Modifier.weight(1f))
 
         Text(
             "‹  Back to Assistant Selection",
             color = color,
-            modifier = Modifier.clickable {
-                onBack()
-            }
+            modifier = Modifier.clickable { onBack() }
         )
     }
 }
