@@ -573,18 +573,20 @@ fun CustomizeScreen(
         Modifier.fillMaxSize()
     ) {
 
-        val compact = maxHeight < 750.dp
+        val compact = maxHeight < 850.dp
 
         AppBackground()
 
         Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(
-                    horizontal = 18.dp,
-                    vertical = 8.dp
-                ),
+    Modifier
+        .fillMaxSize()
+        .navigationBarsPadding()
+        .imePadding()
+        .verticalScroll(rememberScrollState())
+        .padding(
+            horizontal = 18.dp,
+            vertical = 6.dp
+        ),
 
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -648,7 +650,7 @@ fun CustomizeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(
-                        if (compact) 205.dp else 270.dp
+                        if (compact) 170.dp else 220.dp
                     )
             )
 
