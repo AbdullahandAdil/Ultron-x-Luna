@@ -31,8 +31,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        window.statusBarColor = android.graphics.Color.rgb(3, 7, 19)
-        window.navigationBarColor = android.graphics.Color.rgb(3, 7, 19)
+        window.statusBarColor =
+            android.graphics.Color.rgb(3, 7, 19)
+
+        window.navigationBarColor =
+            android.graphics.Color.rgb(3, 7, 19)
 
         setContent {
             MaterialTheme {
@@ -120,7 +123,7 @@ fun AppHeader(
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(14.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -128,30 +131,43 @@ fun AppHeader(
             Text(
                 "‹ BACK",
                 color = color,
-                fontSize = 18.sp,
-                modifier = Modifier.clickable { onBack() }
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable {
+                    onBack()
+                }
             )
         } else {
-            Text("☰", color = color, fontSize = 27.sp)
+            Text(
+                "☰",
+                color = color,
+                fontSize = 25.sp
+            )
         }
 
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Image(
                 painter = painterResource(R.drawable.app_logo),
                 contentDescription = "App Logo",
-                modifier = Modifier.size(58.dp),
+                modifier = Modifier.size(48.dp),
                 contentScale = ContentScale.Fit
             )
 
             Text(
                 "Personal AI Assistant",
                 color = White,
-                fontSize = 17.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
             )
         }
 
-        Text("⚙", color = color, fontSize = 27.sp)
+        Text(
+            "⚙",
+            color = color,
+            fontSize = 25.sp
+        )
     }
 }
 
@@ -171,7 +187,7 @@ fun WelcomeScreen(onSelect: (String) -> Unit) {
         ) {
             AppHeader(Blue)
 
-            Spacer(Modifier.height(25.dp))
+            Spacer(Modifier.height(18.dp))
 
             Text(
                 "CHOOSE YOUR ASSISTANT",
@@ -181,12 +197,12 @@ fun WelcomeScreen(onSelect: (String) -> Unit) {
                 textAlign = TextAlign.Center
             )
 
-            Spacer(Modifier.height(25.dp))
+            Spacer(Modifier.height(20.dp))
 
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .height(500.dp),
+                    .height(430.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 AssistantCard(
@@ -210,7 +226,7 @@ fun WelcomeScreen(onSelect: (String) -> Unit) {
                 }
             }
 
-            Spacer(Modifier.height(45.dp))
+            Spacer(Modifier.height(30.dp))
 
             Text(
                 "✦  TOGETHER, ALWAYS...  ✦",
@@ -219,7 +235,7 @@ fun WelcomeScreen(onSelect: (String) -> Unit) {
                 letterSpacing = 2.sp
             )
 
-            Spacer(Modifier.height(25.dp))
+            Spacer(Modifier.height(20.dp))
         }
     }
 }
@@ -241,14 +257,14 @@ fun AssistantCard(
             .clip(RoundedCornerShape(25.dp))
             .background(color.copy(alpha = 0.13f))
             .border(2.dp, color, RoundedCornerShape(25.dp))
-            .padding(10.dp),
+            .padding(9.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             if (name == "ULTRON") "◈" else "✧",
             color = color,
-            fontSize = 32.sp
+            fontSize = 28.sp
         )
 
         Image(
@@ -257,21 +273,21 @@ fun AssistantCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .clip(RoundedCornerShape(20.dp)),
+                .clip(RoundedCornerShape(18.dp)),
             contentScale = ContentScale.Crop
         )
 
         Text(
             name,
             color = color,
-            fontSize = 25.sp,
+            fontSize = 23.sp,
             fontWeight = FontWeight.Black
         )
 
         Text(
             tagline,
             color = color,
-            fontSize = 10.sp,
+            fontSize = 9.sp,
             textAlign = TextAlign.Center
         )
 
@@ -279,13 +295,17 @@ fun AssistantCard(
             onClick = onClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
+                .height(48.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = color.copy(alpha = 0.18f)
             ),
             shape = RoundedCornerShape(30.dp)
         ) {
-            Text("Select  ›", color = White, fontSize = 18.sp)
+            Text(
+                "Select  ›",
+                color = White,
+                fontSize = 17.sp
+            )
         }
     }
 }
@@ -310,46 +330,63 @@ fun CustomizeScreen(
         mutableStateOf(initialName)
     }
 
-    Box(Modifier.fillMaxSize()) {
+    BoxWithConstraints(
+        Modifier.fillMaxSize()
+    ) {
         AppBackground()
+
+        val compact = maxHeight < 750.dp
+        val artworkHeight = if (compact) 245.dp else 285.dp
 
         Column(
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AppHeader(color, onBack)
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(
+                Modifier.height(
+                    if (compact) 6.dp else 12.dp
+                )
+            )
 
             Text(
                 "CUSTOMIZE YOUR $assistant",
                 color = color,
-                fontSize = 22.sp,
+                fontSize = if (compact) 19.sp else 22.sp,
                 fontWeight = FontWeight.Black,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(
+                Modifier.height(
+                    if (compact) 12.dp else 18.dp
+                )
+            )
 
-            // MAIN ARTWORK AND OPTIONS
+            // ARTWORK AND APPEARANCE OPTIONS
 
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .height(370.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    .height(artworkHeight),
+                horizontalArrangement = Arrangement.spacedBy(9.dp)
             ) {
                 Box(
                     Modifier
                         .weight(1.05f)
                         .fillMaxHeight()
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(18.dp))
                         .background(color.copy(alpha = 0.08f))
-                        .border(1.dp, color, RoundedCornerShape(20.dp)),
-                    contentAlignment = Alignment.Center
+                        .border(
+                            1.dp,
+                            color,
+                            RoundedCornerShape(18.dp)
+                        )
                 ) {
                     SelectedArtwork(
                         assistant = assistant,
@@ -362,21 +399,25 @@ fun CustomizeScreen(
                     Modifier
                         .weight(0.95f)
                         .fillMaxHeight()
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(18.dp))
                         .background(Color(0xFF070D1D))
-                        .border(1.dp, color, RoundedCornerShape(20.dp))
-                        .padding(8.dp),
+                        .border(
+                            1.dp,
+                            color,
+                            RoundedCornerShape(18.dp)
+                        )
+                        .padding(6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         "Choose Appearance",
                         color = White,
-                        fontSize = 14.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
 
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(4.dp))
 
                     AppearanceOption(
                         title = "Character",
@@ -384,7 +425,9 @@ fun CustomizeScreen(
                         selected = appearance == "Character",
                         color = color,
                         modifier = Modifier.weight(1f),
-                        onClick = { appearance = "Character" }
+                        onClick = {
+                            appearance = "Character"
+                        }
                     ) {
                         CharacterPreview(assistant)
                     }
@@ -395,9 +438,14 @@ fun CustomizeScreen(
                         selected = appearance == "Globe",
                         color = color,
                         modifier = Modifier.weight(1f),
-                        onClick = { appearance = "Globe" }
+                        onClick = {
+                            appearance = "Globe"
+                        }
                     ) {
-                        GlobeArtwork(color, Modifier.fillMaxSize())
+                        GlobeArtwork(
+                            color,
+                            Modifier.fillMaxSize()
+                        )
                     }
 
                     AppearanceOption(
@@ -406,32 +454,38 @@ fun CustomizeScreen(
                         selected = appearance == "Energy Core",
                         color = color,
                         modifier = Modifier.weight(1f),
-                        onClick = { appearance = "Energy Core" }
+                        onClick = {
+                            appearance = "Energy Core"
+                        }
                     ) {
-                        EnergyCoreArtwork(color, Modifier.fillMaxSize())
+                        EnergyCoreArtwork(
+                            color,
+                            Modifier.fillMaxSize()
+                        )
                     }
                 }
             }
 
-            Spacer(Modifier.height(25.dp))
+            Spacer(Modifier.height(15.dp))
 
             Text(
                 "What should $assistant call you?",
                 color = White,
-                fontSize = 18.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                fontSize = 17.sp,
+                textAlign = TextAlign.Center
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(7.dp))
 
             OutlinedTextField(
                 value = userName,
                 onValueChange = { userName = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text("Enter Your Name...") },
-                shape = RoundedCornerShape(15.dp),
+                placeholder = {
+                    Text("Enter Your Name...")
+                },
+                shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = color,
                     unfocusedBorderColor = color.copy(alpha = 0.5f),
@@ -441,20 +495,28 @@ fun CustomizeScreen(
                 )
             )
 
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(12.dp))
 
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
+                    .clip(RoundedCornerShape(17.dp))
                     .background(color.copy(alpha = 0.10f))
-                    .border(1.5.dp, color, RoundedCornerShape(20.dp))
-                    .padding(18.dp),
+                    .border(
+                        1.dp,
+                        color,
+                        RoundedCornerShape(17.dp)
+                    )
+                    .padding(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Your Name Preview", color = color, fontSize = 17.sp)
+                Text(
+                    "Your Name Preview",
+                    color = color,
+                    fontSize = 15.sp
+                )
 
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(5.dp))
 
                 Text(
                     if (userName.isNotBlank()) {
@@ -463,12 +525,12 @@ fun CustomizeScreen(
                         "Hello!"
                     },
                     color = White,
-                    fontSize = 27.sp,
+                    fontSize = 23.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(Modifier.height(25.dp))
+            Spacer(Modifier.height(15.dp))
 
             Button(
                 onClick = {
@@ -476,34 +538,34 @@ fun CustomizeScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(62.dp),
+                    .height(55.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = color
                 ),
-                shape = RoundedCornerShape(35.dp)
+                shape = RoundedCornerShape(30.dp)
             ) {
                 Text(
                     "✓   SAVE & CONTINUE   ›",
                     color = Dark,
-                    fontSize = 18.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(Modifier.height(22.dp))
+            Spacer(Modifier.height(14.dp))
 
             Text(
                 "Together, Always...",
                 color = color,
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                fontSize = 15.sp
             )
 
-            Spacer(Modifier.height(25.dp))
+            Spacer(Modifier.height(20.dp))
         }
     }
 }
+
+
 // ---------------- APPEARANCE OPTION ----------------
 
 @Composable
@@ -519,19 +581,21 @@ fun AppearanceOption(
     Column(
         modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clip(RoundedCornerShape(13.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(
-                if (selected) color.copy(alpha = 0.18f)
-                else Color(0xFF030713)
+                if (selected) {
+                    color.copy(alpha = 0.18f)
+                } else {
+                    Color(0xFF030713)
+                }
             )
             .border(
                 if (selected) 2.dp else 1.dp,
                 if (selected) color else Color.DarkGray,
-                RoundedCornerShape(13.dp)
+                RoundedCornerShape(12.dp)
             )
             .clickable { onClick() }
-            .padding(5.dp),
+            .padding(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -546,7 +610,7 @@ fun AppearanceOption(
                 Text(
                     "✓",
                     color = color,
-                    fontSize = 18.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Black,
                     modifier = Modifier.align(Alignment.TopEnd)
                 )
@@ -556,14 +620,15 @@ fun AppearanceOption(
         Text(
             title,
             color = White,
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold
         )
 
         Text(
             subtitle,
             color = color,
-            fontSize = 9.sp
+            fontSize = 8.sp,
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -594,7 +659,10 @@ fun SelectedArtwork(
     appearance: String,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier, contentAlignment = Alignment.Center) {
+    Box(
+        modifier,
+        contentAlignment = Alignment.Center
+    ) {
         when (appearance) {
             "Character" -> CharacterPreview(assistant)
 
@@ -620,7 +688,10 @@ fun GlobeArtwork(
 ) {
     Canvas(modifier) {
         val radius = size.minDimension * 0.32f
-        val center = Offset(size.width / 2, size.height / 2)
+        val center = Offset(
+            size.width / 2,
+            size.height / 2
+        )
 
         // Outer glow
         drawCircle(
@@ -644,8 +715,14 @@ fun GlobeArtwork(
                     color,
                     Color(0xFF06133C)
                 ),
-                start = Offset(center.x - radius, center.y - radius),
-                end = Offset(center.x + radius, center.y + radius)
+                start = Offset(
+                    center.x - radius,
+                    center.y - radius
+                ),
+                end = Offset(
+                    center.x + radius,
+                    center.y + radius
+                )
             ),
             radius = radius,
             center = center
@@ -655,26 +732,59 @@ fun GlobeArtwork(
         val land = color.copy(alpha = 0.85f)
 
         val path = Path().apply {
-            moveTo(center.x - radius * 0.65f, center.y - radius * 0.25f)
-            lineTo(center.x - radius * 0.25f, center.y - radius * 0.65f)
-            lineTo(center.x + radius * 0.05f, center.y - radius * 0.35f)
-            lineTo(center.x - radius * 0.05f, center.y + radius * 0.05f)
-            lineTo(center.x - radius * 0.42f, center.y + radius * 0.20f)
+            moveTo(
+                center.x - radius * 0.65f,
+                center.y - radius * 0.25f
+            )
+            lineTo(
+                center.x - radius * 0.25f,
+                center.y - radius * 0.65f
+            )
+            lineTo(
+                center.x + radius * 0.05f,
+                center.y - radius * 0.35f
+            )
+            lineTo(
+                center.x - radius * 0.05f,
+                center.y + radius * 0.05f
+            )
+            lineTo(
+                center.x - radius * 0.42f,
+                center.y + radius * 0.20f
+            )
             close()
         }
 
         drawPath(path, land)
 
         val secondLand = Path().apply {
-            moveTo(center.x + radius * 0.25f, center.y - radius * 0.10f)
-            lineTo(center.x + radius * 0.65f, center.y - radius * 0.30f)
-            lineTo(center.x + radius * 0.55f, center.y + radius * 0.25f)
-            lineTo(center.x + radius * 0.20f, center.y + radius * 0.55f)
-            lineTo(center.x + radius * 0.05f, center.y + radius * 0.15f)
+            moveTo(
+                center.x + radius * 0.25f,
+                center.y - radius * 0.10f
+            )
+            lineTo(
+                center.x + radius * 0.65f,
+                center.y - radius * 0.30f
+            )
+            lineTo(
+                center.x + radius * 0.55f,
+                center.y + radius * 0.25f
+            )
+            lineTo(
+                center.x + radius * 0.20f,
+                center.y + radius * 0.55f
+            )
+            lineTo(
+                center.x + radius * 0.05f,
+                center.y + radius * 0.15f
+            )
             close()
         }
 
-        drawPath(secondLand, land.copy(alpha = 0.65f))
+        drawPath(
+            secondLand,
+            land.copy(alpha = 0.65f)
+        )
 
         // Orbit ring
         drawOval(
@@ -790,21 +900,21 @@ fun HomeScreen(
         ) {
             AppHeader(color)
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(25.dp))
 
             Text(
                 assistant,
                 color = color,
-                fontSize = 34.sp,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.Black
             )
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(16.dp))
 
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .height(330.dp)
+                    .height(300.dp)
                     .clip(RoundedCornerShape(25.dp))
                     .background(color.copy(alpha = 0.08f))
                     .border(
@@ -820,7 +930,7 @@ fun HomeScreen(
                 )
             }
 
-            Spacer(Modifier.height(25.dp))
+            Spacer(Modifier.height(22.dp))
 
             Text(
                 if (userName.isNotBlank()) {
@@ -833,7 +943,7 @@ fun HomeScreen(
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(28.dp))
 
             Text(
                 "‹  Back to Assistant Selection",
