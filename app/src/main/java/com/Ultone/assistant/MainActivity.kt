@@ -383,6 +383,7 @@ fun CustomizeScreen(
                         subtitle = "Faceless Hero",
                         selected = appearance == "Character",
                         color = color,
+                        modifier = Modifier.weight(1f),
                         onClick = { appearance = "Character" }
                     ) {
                         CharacterPreview(assistant)
@@ -393,6 +394,7 @@ fun CustomizeScreen(
                         subtitle = "Dynamic Planet",
                         selected = appearance == "Globe",
                         color = color,
+                        modifier = Modifier.weight(1f),
                         onClick = { appearance = "Globe" }
                     ) {
                         GlobeArtwork(color, Modifier.fillMaxSize())
@@ -403,6 +405,7 @@ fun CustomizeScreen(
                         subtitle = "Power Energy",
                         selected = appearance == "Energy Core",
                         color = color,
+                        modifier = Modifier.weight(1f),
                         onClick = { appearance = "Energy Core" }
                     ) {
                         EnergyCoreArtwork(color, Modifier.fillMaxSize())
