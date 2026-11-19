@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,14 +15,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -33,19 +33,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
-private val Background = Color(0xFF050609)
-private val SurfaceDark = Color(0xFF10141E)
-private val Gold = Color(0xFFD9AE50)
-private val UltronBlue = Color(0xFF00C8FF)
-private val LunaPurple = Color(0xFFB56CFF)
-private val SoftWhite = Color(0xFFECEEF5)
-private val Muted = Color(0xFF9299A9)
+private val Background = Color(0xFF03050B)
+private val Panel = Color(0xFF101522)
+private val Gold = Color(0xFFFFC94A)
+private val Blue = Color(0xFF00C8FF)
+private val Purple = Color(0xFFB45CFF)
+private val White = Color(0xFFF4F5FA)
+private val Muted = Color(0xFF969DB0)
 
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             AssistantApp()
         }
@@ -57,22 +55,22 @@ fun AssistantApp() {
 
     val context = androidx.compose.ui.platform.LocalContext.current
 
-    val preferences = remember {
+    val prefs = remember {
         context.getSharedPreferences(
             "ultron_luna_settings",
             Context.MODE_PRIVATE
         )
     }
 
-    var activePersona by rememberSaveable {
+    var persona by rememberSaveable {
         mutableStateOf(
-            preferences.getString("persona", "") ?: ""
+            prefs.getString("persona", "") ?: ""
         )
     }
 
     var userName by rememberSaveable {
         mutableStateOf(
-            preferences.getString("user_name", "") ?: ""
+            prefs.getString("user_name", "") ?: ""
         )
     }
 
@@ -82,12 +80,7 @@ fun AssistantApp() {
 
     LaunchedEffect(Unit) {
         delay(1100)
-
-        screen = if (activePersona.isEmpty()) {
-            "welcome"
-        } else {
-            "home"
-        }
+        screen = if (persona.isBlank()) "welcome" else "home"
     }
 
     MaterialTheme {
@@ -100,46 +93,50 @@ fun AssistantApp() {
                 "splash" -> SplashScreen()
 
                 "welcome" -> WelcomeScreen(
-                    onSelect = { persona ->
-                        activePersona = persona
-
-                        preferences.edit()
+                    selectedPersona = persona,
+                    userName = userName,
+                    onNameChange = { userName = it },
+                    onSelect = { persona = it },
+                    onSettings = { screen = "settings" },
+                    onContinue = {
+                        prefs.edit()
                             .putString("persona", persona)
+                            .putString("user_name", userName.trim())
                             .apply()
 
+                        userName = userName.trim()
                         screen = "home"
                     }
                 )
 
                 "home" -> HomeScreen(
-                    persona = activePersona,
+                    persona = persona,
                     userName = userName,
-                    onSettings = {
-                        screen = "settings"
-                    }
+                    onSettings = { screen = "settings" }
                 )
 
                 "settings" -> SettingsScreen(
-                    persona = activePersona,
+                    persona = persona,
                     userName = userName,
-                    onNameChange = { newName ->
-                        userName = newName
-
-                        preferences.edit()
-                            .putString("user_name", newName)
+                    onNameChange = {
+                        userName = it
+                        prefs.edit()
+                            .putString("user_name", it)
                             .apply()
                     },
-                    onPersonaChange = { newPersona ->
-                        activePersona = newPersona
-
-                        preferences.edit()
-                            .putString("persona", newPersona)
+                    onPersonaChange = {
+                        persona = it
+                        prefs.edit()
+                            .putString("persona", it)
                             .apply()
-
                         screen = "home"
                     },
                     onBack = {
-                        screen = "home"
+                        screen = if (persona.isBlank()) {
+                            "welcome"
+                        } else {
+                            "home"
+                        }
                     }
                 )
             }
@@ -147,28 +144,10 @@ fun AssistantApp() {
     }
 }
 
-// ---------------- SPLASH SCREEN ----------------
+// SPLASH SCREEN
 
 @Composable
 fun SplashScreen() {
-
-    var visible by remember {
-        mutableStateOf(false)
-    }
-
-    val scale by animateFloatAsState(
-        targetValue = if (visible) 1f else 0.75f,
-        label = "logoScale"
-    )
-
-    val alpha by animateFloatAsState(
-        targetValue = if (visible) 1f else 0f,
-        label = "logoAlpha"
-    )
-
-    LaunchedEffect(Unit) {
-        visible = true
-    }
 
     Box(
         modifier = Modifier
@@ -176,35 +155,29 @@ fun SplashScreen() {
             .background(Background),
         contentAlignment = Alignment.Center
     ) {
-
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Image(
                 painter = painterResource(R.drawable.app_logo),
-                contentDescription = "Ultron x Luna Logo",
-                modifier = Modifier
-                    .size(155.dp)
-                    .scale(scale)
-                    .alpha(alpha),
-                contentScale = ContentScale.Fit
+                contentDescription = "Crown Logo",
+                modifier = Modifier.size(145.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(20.dp))
 
             Text(
-                text = "ULTRON  x  LUNA",
+                "ULTRON x LUNA",
                 color = Gold,
                 fontSize = 25.sp,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 3.sp
             )
 
-            Spacer(modifier = Modifier.height(9.dp))
+            Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "PERSONAL AI ASSISTANT",
+                "PERSONAL AI ASSISTANT",
                 color = Muted,
                 fontSize = 10.sp,
                 letterSpacing = 3.sp
@@ -213,175 +186,572 @@ fun SplashScreen() {
     }
 }
 
-// ---------------- WELCOME SCREEN ----------------
+// WELCOME SCREEN
 
 @Composable
 fun WelcomeScreen(
-    onSelect: (String) -> Unit
+    selectedPersona: String,
+    userName: String,
+    onNameChange: (String) -> Unit,
+    onSelect: (String) -> Unit,
+    onSettings: () -> Unit,
+    onContinue: () -> Unit
 ) {
 
-    Box(
+    var menuExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    val accent = when (selectedPersona) {
+        "ultron" -> Blue
+        "luna" -> Purple
+        else -> Gold
+    }
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Background)
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 22.dp)
+            .padding(horizontal = 16.dp)
     ) {
 
-        Column(
+        // HEADER
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 55.dp, bottom = 30.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(top = 12.dp, bottom = 22.dp)
         ) {
 
-            Image(
-                painter = painterResource(R.drawable.app_logo),
-                contentDescription = "Crown Logo",
-                modifier = Modifier.size(75.dp)
-            )
+            Box(
+                modifier = Modifier.align(Alignment.TopStart)
+            ) {
+                HeaderIcon(
+                    symbol = "☰",
+                    onClick = { menuExpanded = true }
+                )
 
-            Spacer(modifier = Modifier.height(25.dp))
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = {
+                        menuExpanded = false
+                    },
+                    containerColor = Panel
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text("About Assistant", color = White)
+                        },
+                        onClick = { menuExpanded = false }
+                    )
 
-            Text(
-                text = "Personal AI Assistant",
-                color = SoftWhite,
-                fontSize = 25.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
+                    DropdownMenuItem(
+                        text = {
+                            Text("Settings", color = White)
+                        },
+                        onClick = {
+                            menuExpanded = false
+                            onSettings()
+                        }
+                    )
+                }
+            }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 65.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.app_logo),
+                    contentDescription = "App Logo",
+                    modifier = Modifier.size(70.dp)
+                )
 
-            Text(
-                text = "Choose your assistant",
-                color = Muted,
-                fontSize = 14.sp
-            )
+                Text(
+                    "Personal AI Assistant",
+                    color = White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            }
 
-            Spacer(modifier = Modifier.height(35.dp))
+            Box(
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                HeaderIcon(
+                    symbol = "⚙",
+                    onClick = onSettings
+                )
+            }
+        }
 
-            PersonaCard(
+        Text(
+            "CHOOSE YOUR ASSISTANT",
+            color = Gold,
+            fontSize = 11.sp,
+            letterSpacing = 2.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 15.dp),
+            textAlign = TextAlign.Center
+        )
+
+        // TWO CARDS
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            PersonaSelectionCard(
                 name = "ULTRON",
-                description = "Professional  •  Intelligent  •  Powerful",
-                color = UltronBlue,
+                description = "Professional",
+                color = Blue,
                 image = R.drawable.ultron_character,
-                onClick = {
-                    onSelect("ultron")
-                }
+                selected = selectedPersona == "ultron",
+                modifier = Modifier.weight(1f),
+                onClick = { onSelect("ultron") }
             )
 
-            Spacer(modifier = Modifier.height(22.dp))
-
-            PersonaCard(
+            PersonaSelectionCard(
                 name = "LUNA",
-                description = "Friendly  •  Caring  •  Intelligent",
-                color = LunaPurple,
+                description = "Friendly",
+                color = Purple,
                 image = R.drawable.luna_character,
-                onClick = {
-                    onSelect("luna")
-                }
-            )
-
-            Spacer(modifier = Modifier.height(35.dp))
-
-            Text(
-                text = "TOGETHER, ALWAYS...",
-                color = Gold,
-                fontSize = 11.sp,
-                letterSpacing = 3.sp,
-                fontWeight = FontWeight.Medium
+                selected = selectedPersona == "luna",
+                modifier = Modifier.weight(1f),
+                onClick = { onSelect("luna") }
             )
         }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 22.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                Modifier
+                    .weight(1f)
+                    .height(1.dp)
+                    .background(Gold.copy(alpha = 0.6f))
+            )
+
+            Text("  ✦  ", color = Gold, fontSize = 20.sp)
+
+            Box(
+                Modifier
+                    .weight(1f)
+                    .height(1.dp)
+                    .background(Gold.copy(alpha = 0.6f))
+            )
+        }
+
+        Text(
+            "Your Name",
+            color = White,
+            fontSize = 23.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(5.dp))
+
+        Text(
+            "Enter your name to continue",
+            color = Muted,
+            fontSize = 13.sp,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        NameInputField(
+            value = userName,
+            onValueChange = onNameChange
+        )
+
+        Spacer(Modifier.height(18.dp))
+
+        NamePreviewCard(
+            persona = selectedPersona,
+            userName = userName
+        )
+
+        Spacer(Modifier.height(22.dp))
+
+        SaveContinueButton(
+            enabled = selectedPersona.isNotBlank() &&
+                    userName.isNotBlank(),
+            color = accent,
+            onClick = onContinue
+        )
+
+        Spacer(Modifier.height(23.dp))
+
+        FooterSection()
+
+        Spacer(Modifier.height(14.dp))
     }
 }
 
-// ---------------- PERSONA CARD ----------------
+// HEADER ICON
 
 @Composable
-fun PersonaCard(
+fun HeaderIcon(
+    symbol: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(43.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(Panel)
+            .border(
+                1.dp,
+                Gold.copy(alpha = 0.45f),
+                RoundedCornerShape(14.dp)
+            )
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            symbol,
+            color = Gold,
+            fontSize = 24.sp
+        )
+    }
+}
+
+// PERSONA CARD
+
+@Composable
+fun PersonaSelectionCard(
     name: String,
     description: String,
     color: Color,
     image: Int,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
 
+    val borderColor by animateColorAsState(
+        targetValue = if (selected) {
+            color
+        } else {
+            color.copy(alpha = 0.35f)
+        },
+        label = "cardBorder"
+    )
+
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
+        modifier = modifier
+            .shadow(
+                elevation = if (selected) 12.dp else 3.dp,
+                shape = RoundedCornerShape(19.dp),
+                ambientColor = color.copy(alpha = 0.4f),
+                spotColor = color.copy(alpha = 0.4f)
+            )
+            .clip(RoundedCornerShape(19.dp))
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF171C29),
-                        Color(0xFF0C1018)
+                    listOf(
+                        Color(0xFF171D2C),
+                        Color(0xFF090D17)
                     )
                 )
             )
             .border(
-                width = 1.dp,
-                color = color.copy(alpha = 0.65f),
-                shape = RoundedCornerShape(24.dp)
+                width = if (selected) 2.dp else 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(19.dp)
             )
             .clickable { onClick() }
-            .padding(20.dp),
+            .padding(9.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Image(
-            painter = painterResource(image),
-            contentDescription = name,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(190.dp),
-            contentScale = ContentScale.Fit
-        )
+                .height(155.dp)
+        ) {
+            Image(
+                painter = painterResource(image),
+                contentDescription = name,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(13.dp)),
+                contentScale = ContentScale.Fit
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(6.dp)
+                    .size(25.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (selected) color else Background.copy(alpha = 0.8f)
+                    )
+                    .border(1.dp, color, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    if (selected) "✓" else "",
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Spacer(Modifier.height(10.dp))
 
         Text(
-            text = name,
+            name,
             color = color,
-            fontSize = 27.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 4.sp
+            fontSize = 19.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 2.sp
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(Modifier.height(5.dp))
 
         Text(
-            text = description,
+            description,
             color = Muted,
             fontSize = 11.sp,
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(Modifier.height(10.dp))
 
         Box(
             modifier = Modifier
+                .fillMaxWidth()
                 .clip(RoundedCornerShape(30.dp))
-                .background(color.copy(alpha = 0.15f))
+                .background(color.copy(alpha = 0.12f))
                 .border(
                     1.dp,
-                    color,
+                    color.copy(alpha = 0.8f),
                     RoundedCornerShape(30.dp)
                 )
-                .padding(horizontal = 38.dp, vertical = 11.dp)
+                .padding(vertical = 9.dp),
+            contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "SELECT",
+                if (selected) "SELECTED ✓" else "SELECT",
                 color = color,
-                fontSize = 12.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
+                letterSpacing = 1.sp
             )
         }
     }
 }
 
-// ---------------- HOME SCREEN ----------------
+
+// NAME INPUT FIELD
+
+@Composable
+fun NameInputField(
+    value: String,
+    onValueChange: (String) -> Unit
+) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        textStyle = androidx.compose.ui.text.TextStyle(
+            color = White,
+            fontSize = 16.sp
+        ),
+        modifier = Modifier.fillMaxWidth(),
+        decorationBox = { innerTextField ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(Panel)
+                    .border(
+                        1.dp,
+                        Gold.copy(alpha = 0.55f),
+                        RoundedCornerShape(15.dp)
+                    )
+                    .padding(horizontal = 17.dp, vertical = 17.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "✦",
+                    color = Gold,
+                    fontSize = 18.sp
+                )
+
+                Spacer(Modifier.width(12.dp))
+
+                Box(Modifier.weight(1f)) {
+                    if (value.isEmpty()) {
+                        Text(
+                            "Enter your name...",
+                            color = Muted,
+                            fontSize = 15.sp
+                        )
+                    }
+                    innerTextField()
+                }
+            }
+        }
+    )
+}
+
+// NAME PREVIEW
+
+@Composable
+fun NamePreviewCard(
+    persona: String,
+    userName: String
+) {
+    val accent = when (persona) {
+        "ultron" -> Blue
+        "luna" -> Purple
+        else -> Gold
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(17.dp))
+            .background(Panel)
+            .border(
+                1.dp,
+                accent.copy(alpha = 0.45f),
+                RoundedCornerShape(17.dp)
+            )
+            .padding(17.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "NAME PREVIEW",
+            color = Muted,
+            fontSize = 10.sp,
+            letterSpacing = 2.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            text = if (userName.isBlank()) {
+                "Hello, User!"
+            } else {
+                "Hello, ${userName.trim()}!"
+            },
+            color = White,
+            fontSize = 23.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(7.dp))
+
+        Text(
+            text = when (persona) {
+                "ultron" -> "ULTRON is ready to assist you."
+                "luna" -> "LUNA is here for you."
+                else -> "Your assistant is waiting."
+            },
+            color = accent,
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+// SAVE AND CONTINUE BUTTON
+
+@Composable
+fun SaveContinueButton(
+    enabled: Boolean,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(58.dp)
+            .shadow(
+                elevation = if (enabled) 8.dp else 0.dp,
+                shape = RoundedCornerShape(16.dp),
+                ambientColor = color,
+                spotColor = color
+            ),
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = color,
+            contentColor = Background,
+            disabledContainerColor = Color(0xFF303442),
+            disabledContentColor = Muted
+        )
+    ) {
+        Text(
+            "SAVE & CONTINUE   →",
+            fontSize = 15.sp,
+            fontWeight = FontWeight.ExtraBold,
+            letterSpacing = 1.sp
+        )
+    }
+}
+
+// FOOTER
+
+@Composable
+fun FooterSection() {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "TOGETHER, ALWAYS...",
+            color = Gold,
+            fontSize = 11.sp,
+            letterSpacing = 3.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            "One Assistant. Two Personalities. Endless Possibilities.",
+            color = Muted,
+            fontSize = 10.sp,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(5.dp))
+
+        Text(
+            "ULTRON x LUNA",
+            color = Muted.copy(alpha = 0.65f),
+            fontSize = 9.sp,
+            letterSpacing = 2.sp
+        )
+    }
+}
+
+// HOME SCREEN
 
 @Composable
 fun HomeScreen(
@@ -389,14 +759,13 @@ fun HomeScreen(
     userName: String,
     onSettings: () -> Unit
 ) {
-
     val isUltron = persona == "ultron"
-    val accent = if (isUltron) UltronBlue else LunaPurple
-    val name = if (isUltron) "ULTRON" else "LUNA"
-    val greeting = if (isUltron) {
-        "Systems online. How can I assist you?"
+    val accent = if (isUltron) Blue else Purple
+    val assistantName = if (isUltron) "ULTRON" else "LUNA"
+    val characterImage = if (isUltron) {
+        R.drawable.ultron_character
     } else {
-        "Hello! I'm here for you."
+        R.drawable.luna_character
     }
 
     var message by rememberSaveable {
@@ -409,156 +778,155 @@ fun HomeScreen(
             .background(Background)
             .statusBarsPadding()
             .navigationBarsPadding()
-            .padding(18.dp)
+            .padding(horizontal = 18.dp)
     ) {
 
+        // HOME HEADER
+
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Personal AI Assistant",
-                    color = SoftWhite,
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    text = name,
-                    color = accent,
-                    fontSize = 11.sp,
-                    letterSpacing = 3.sp
-                )
-            }
-
-            Text(
-                text = "⚙",
-                color = Gold,
-                fontSize = 27.sp,
-                modifier = Modifier.clickable {
-                    onSettings()
-                }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(25.dp))
-
-        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
-            contentAlignment = Alignment.Center
+                .padding(top = 17.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier.weight(1f)
             ) {
-
-                Image(
-                    painter = painterResource(
-                        if (isUltron) {
-                            R.drawable.ultron_character
-                        } else {
-                            R.drawable.luna_character
-                        }
-                    ),
-                    contentDescription = name,
-                    modifier = Modifier.size(230.dp),
-                    contentScale = ContentScale.Fit
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
                 Text(
-                    text = if (userName.isBlank()) {
-                        "Hello!"
-                    } else {
-                        "Hello, $userName!"
-                    },
-                    color = SoftWhite,
-                    fontSize = 25.sp,
+                    "Personal AI Assistant",
+                    color = White,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(Modifier.height(5.dp))
 
                 Text(
-                    text = greeting,
-                    color = Muted,
-                    fontSize = 14.sp,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Text(
-                    text = "AI CONNECTION COMING SOON",
+                    assistantName,
                     color = accent,
-                    fontSize = 10.sp,
-                    letterSpacing = 2.sp
+                    fontSize = 13.sp,
+                    letterSpacing = 4.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
+
+            HeaderIcon(
+                symbol = "⚙",
+                onClick = onSettings
+            )
         }
 
-        Row(
+        Spacer(Modifier.weight(1f))
+
+        // CHARACTER
+
+        Image(
+            painter = painterResource(characterImage),
+            contentDescription = assistantName,
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(30.dp))
-                .background(SurfaceDark)
-                .border(
-                    1.dp,
-                    accent.copy(alpha = 0.5f),
-                    RoundedCornerShape(30.dp)
-                )
-                .padding(horizontal = 15.dp, vertical = 7.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+                .height(300.dp),
+            contentScale = ContentScale.Fit
+        )
 
-            TextField(
-                value = message,
-                onValueChange = { message = it },
-                modifier = Modifier.weight(1f),
-                placeholder = {
-                    Text(
-                        "Message $name...",
-                        color = Muted,
-                        fontSize = 13.sp
-                    )
-                },
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = SoftWhite,
-                    unfocusedTextColor = SoftWhite,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = accent
-                ),
-                maxLines = 3
-            )
-
-            Text(
-                text = "➤",
-                color = accent,
-                fontSize = 24.sp
-            )
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(Modifier.height(20.dp))
 
         Text(
-            text = "AI responses will be enabled in the next development stage.",
+            "Hello${if (userName.isNotBlank()) ", $userName" else ""}!",
+            color = White,
+            fontSize = 34.sp,
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            if (isUltron) {
+                "Systems online. How can I assist you?"
+            } else {
+                "Hello! I'm here for you."
+            },
+            color = Muted,
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(Modifier.height(35.dp))
+
+        Text(
+            "AI CONNECTION COMING SOON",
+            color = accent,
+            fontSize = 11.sp,
+            letterSpacing = 3.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.weight(1f))
+
+        // MESSAGE INPUT PREVIEW
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(35.dp))
+                .background(Panel)
+                .border(
+                    1.dp,
+                    accent.copy(alpha = 0.65f),
+                    RoundedCornerShape(35.dp)
+                )
+                .padding(horizontal = 20.dp, vertical = 20.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(Modifier.weight(1f)) {
+                if (message.isEmpty()) {
+                    Text(
+                        "Message $assistantName...",
+                        color = Muted,
+                        fontSize = 15.sp
+                    )
+                }
+
+                BasicTextField(
+                    value = message,
+                    onValueChange = { message = it },
+                    singleLine = true,
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        color = White,
+                        fontSize = 15.sp
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Text(
+                "➤",
+                color = accent,
+                fontSize = 27.sp,
+                modifier = Modifier.padding(start = 12.dp)
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            "AI responses will be enabled in the next development stage.",
             color = Muted,
             fontSize = 10.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp)
         )
     }
 }
 
-// ---------------- SETTINGS SCREEN ----------------
+// SETTINGS SCREEN
 
 @Composable
 fun SettingsScreen(
@@ -568,8 +936,7 @@ fun SettingsScreen(
     onPersonaChange: (String) -> Unit,
     onBack: () -> Unit
 ) {
-
-    var name by rememberSaveable {
+    var editedName by rememberSaveable(userName) {
         mutableStateOf(userName)
     }
 
@@ -580,126 +947,183 @@ fun SettingsScreen(
             .statusBarsPadding()
             .navigationBarsPadding()
             .verticalScroll(rememberScrollState())
-            .padding(22.dp)
+            .padding(20.dp)
     ) {
 
+        // SETTINGS HEADER
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HeaderIcon(
+                symbol = "←",
+                onClick = onBack
+            )
+
+            Spacer(Modifier.width(15.dp))
+
+            Text(
+                "Settings",
+                color = White,
+                fontSize = 25.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(Modifier.height(35.dp))
+
         Text(
-            text = "‹  Settings",
+            "YOUR PROFILE",
             color = Gold,
-            fontSize = 23.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable {
-                onBack()
+            fontSize = 12.sp,
+            letterSpacing = 2.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            "Your Name",
+            color = White,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        NameInputField(
+            value = editedName,
+            onValueChange = { editedName = it }
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Button(
+            onClick = {
+                onNameChange(editedName.trim())
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Gold,
+                contentColor = Background
+            ),
+            shape = RoundedCornerShape(13.dp)
+        ) {
+            Text(
+                "SAVE NAME",
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(Modifier.height(35.dp))
+
+        Text(
+            "CHANGE ASSISTANT",
+            color = Gold,
+            fontSize = 12.sp,
+            letterSpacing = 2.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(Modifier.height(15.dp))
+
+        SettingsPersonaOption(
+            name = "ULTRON",
+            description = "Professional • Intelligent • Powerful",
+            color = Blue,
+            selected = persona == "ultron",
+            onClick = {
+                onPersonaChange("ultron")
             }
         )
 
-        Spacer(modifier = Modifier.height(35.dp))
+        Spacer(Modifier.height(15.dp))
 
-        Text(
-            text = "Your Name",
-            color = SoftWhite,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
+        SettingsPersonaOption(
+            name = "LUNA",
+            description = "Friendly • Caring • Intelligent",
+            color = Purple,
+            selected = persona == "luna",
+            onClick = {
+                onPersonaChange("luna")
+            }
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = name,
-            onValueChange = {
-                name = it
-                onNameChange(it)
-            },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = {
-                Text("Enter your name")
-            },
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(35.dp))
+        Spacer(Modifier.height(35.dp))
 
         Text(
-            text = "Change Assistant",
-            color = SoftWhite,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(15.dp))
-
-        SettingsPersonaButton(
-            title = "ULTRON",
-            color = UltronBlue,
-            selected = persona == "ultron"
-        ) {
-            onPersonaChange("ultron")
-        }
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        SettingsPersonaButton(
-            title = "LUNA",
-            color = LunaPurple,
-            selected = persona == "luna"
-        ) {
-            onPersonaChange("luna")
-        }
-
-        Spacer(modifier = Modifier.height(35.dp))
-
-        Text(
-            text = "ULTRON x LUNA",
+            "ULTRON x LUNA",
             color = Gold,
             fontSize = 12.sp,
-            letterSpacing = 3.sp
+            letterSpacing = 3.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
         )
 
+        Spacer(Modifier.height(8.dp))
+
         Text(
-            text = "Version 1.0",
+            "Personal AI Assistant",
             color = Muted,
-            fontSize = 11.sp
+            fontSize = 12.sp,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
         )
     }
 }
 
-// ---------------- SETTINGS PERSONA BUTTON ----------------
+// SETTINGS PERSONA OPTION
 
 @Composable
-fun SettingsPersonaButton(
-    title: String,
+fun SettingsPersonaOption(
+    name: String,
+    description: String,
     color: Color,
     selected: Boolean,
     onClick: () -> Unit
 ) {
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(SurfaceDark)
+            .background(Panel)
             .border(
-                1.dp,
-                if (selected) color else Color.DarkGray,
-                RoundedCornerShape(16.dp)
+                width = if (selected) 2.dp else 1.dp,
+                color = color.copy(
+                    alpha = if (selected) 1f else 0.35f
+                ),
+                shape = RoundedCornerShape(16.dp)
             )
             .clickable { onClick() }
-            .padding(19.dp),
+            .padding(17.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-
-        Text(
-            text = title,
-            color = color,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
+        Column(
             modifier = Modifier.weight(1f)
-        )
+        ) {
+            Text(
+                name,
+                color = color,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 2.sp
+            )
+
+            Spacer(Modifier.height(5.dp))
+
+            Text(
+                description,
+                color = Muted,
+                fontSize = 11.sp
+            )
+        }
 
         Text(
-            text = if (selected) "ACTIVE ✓" else "SELECT",
-            color = if (selected) color else Muted,
-            fontSize = 11.sp,
+            if (selected) "✓" else "○",
+            color = color,
+            fontSize = 25.sp,
             fontWeight = FontWeight.Bold
         )
     }
