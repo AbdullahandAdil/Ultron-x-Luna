@@ -31,7 +31,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.delay
+import coil.ImageLoader
+import coil.compose.AsyncImage
+import coil.decode.GifDecoder
+import coil.request.ImageRequest
 
 private val Background = Color(0xFF03050B)
 private val Panel = Color(0xFF101522)
@@ -40,6 +45,37 @@ private val Blue = Color(0xFF00C8FF)
 private val Purple = Color(0xFFB45CFF)
 private val White = Color(0xFFF4F5FA)
 private val Muted = Color(0xFF969DB0)
+
+// GIF IMAGE LOADER
+
+@Composable
+fun AnimatedGifImage(
+    image: Int,
+    contentDescription: String,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Fit
+) {
+    val context = LocalContext.current
+
+    val imageLoader = remember {
+        ImageLoader.Builder(context)
+            .components {
+                add(GifDecoder.Factory())
+            }
+            .build()
+    }
+
+    AsyncImage(
+        model = ImageRequest.Builder(context)
+            .data(image)
+            .crossfade(true)
+            .build(),
+        imageLoader = imageLoader,
+        contentDescription = contentDescription,
+        modifier = modifier,
+        contentScale = contentScale
+    )
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +89,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AssistantApp() {
 
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
     val prefs = remember {
         context.getSharedPreferences(
@@ -158,8 +194,8 @@ fun SplashScreen() {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(R.drawable.app_logo),
+            AnimatedGifImage(
+                image = R.drawable.app_logo_anim,
                 contentDescription = "Crown Logo",
                 modifier = Modifier.size(145.dp)
             )
@@ -266,8 +302,8 @@ fun WelcomeScreen(
                     .padding(horizontal = 65.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Image(
-                    painter = painterResource(R.drawable.app_logo),
+                AnimatedGifImage(
+                    image = R.drawable.app_logo_anim,
                     contentDescription = "App Logo",
                     modifier = Modifier.size(70.dp)
                 )
@@ -314,7 +350,7 @@ fun WelcomeScreen(
                 name = "ULTRON",
                 description = "Professional",
                 color = Blue,
-                image = R.drawable.ultron_character,
+                image = R.drawable.ultron_character_anim,
                 selected = selectedPersona == "ultron",
                 modifier = Modifier.weight(1f),
                 onClick = { onSelect("ultron") }
@@ -324,7 +360,7 @@ fun WelcomeScreen(
                 name = "LUNA",
                 description = "Friendly",
                 color = Purple,
-                image = R.drawable.luna_character,
+                image = R.drawable.luna_character_anim,
                 selected = selectedPersona == "luna",
                 modifier = Modifier.weight(1f),
                 onClick = { onSelect("luna") }
@@ -486,8 +522,8 @@ fun PersonaSelectionCard(
                 .fillMaxWidth()
                 .height(155.dp)
         ) {
-            Image(
-                painter = painterResource(image),
+            AnimatedGifImage(
+                image = image,
                 contentDescription = name,
                 modifier = Modifier
                     .fillMaxSize()
@@ -544,78 +580,65 @@ fun PersonaSelectionCard(
                 .background(color.copy(alpha = 0.12f))
                 .border(
                     1.dp,
-                    color.copy(alpha = 0.8f),
+                    color.copy(alpha = 0.5f),
                     RoundedCornerShape(30.dp)
                 )
-                .padding(vertical = 9.dp),
+                .padding(vertical = 8.dp),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                if (selected) "SELECTED ✓" else "SELECT",
+                if (selected) "SELECTED" else "SELECT",
                 color = color,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
+                letterSpacing = 1.5.sp
             )
         }
     }
 }
 
 
-// NAME INPUT FIELD
+ // NAME INPUT FIELD
 
 @Composable
 fun NameInputField(
     value: String,
     onValueChange: (String) -> Unit
 ) {
-    BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        singleLine = true,
-        textStyle = androidx.compose.ui.text.TextStyle(
-            color = White,
-            fontSize = 16.sp
-        ),
-        modifier = Modifier.fillMaxWidth(),
-        decorationBox = { innerTextField ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(Panel)
-                    .border(
-                        1.dp,
-                        Gold.copy(alpha = 0.55f),
-                        RoundedCornerShape(15.dp)
-                    )
-                    .padding(horizontal = 17.dp, vertical = 17.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "✦",
-                    color = Gold,
-                    fontSize = 18.sp
-                )
-
-                Spacer(Modifier.width(12.dp))
-
-                Box(Modifier.weight(1f)) {
-                    if (value.isEmpty()) {
-                        Text(
-                            "Enter your name...",
-                            color = Muted,
-                            fontSize = 15.sp
-                        )
-                    }
-                    innerTextField()
-                }
-            }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(15.dp))
+            .background(Panel)
+            .border(
+                1.dp,
+                Gold.copy(alpha = 0.55f),
+                RoundedCornerShape(15.dp)
+            )
+            .padding(horizontal = 17.dp, vertical = 17.dp)
+    ) {
+        if (value.isEmpty()) {
+            Text(
+                "Enter your name...",
+                color = Muted,
+                fontSize = 15.sp
+            )
         }
-    )
+
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = true,
+            textStyle = androidx.compose.ui.text.TextStyle(
+                color = White,
+                fontSize = 15.sp
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
 
-// NAME PREVIEW
+// NAME PREVIEW CARD
 
 @Composable
 fun NamePreviewCard(
@@ -626,6 +649,12 @@ fun NamePreviewCard(
         "ultron" -> Blue
         "luna" -> Purple
         else -> Gold
+    }
+
+    val assistantName = when (persona) {
+        "ultron" -> "ULTRON"
+        "luna" -> "LUNA"
+        else -> "ASSISTANT"
     }
 
     Column(
@@ -642,18 +671,18 @@ fun NamePreviewCard(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "NAME PREVIEW",
-            color = Muted,
+            "PERSONALIZED EXPERIENCE",
+            color = accent,
             fontSize = 10.sp,
             letterSpacing = 2.sp,
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(10.dp))
 
         Text(
-            text = if (userName.isBlank()) {
-                "Hello, User!"
+            if (userName.isBlank()) {
+                "Hello!"
             } else {
                 "Hello, ${userName.trim()}!"
             },
@@ -663,15 +692,11 @@ fun NamePreviewCard(
             textAlign = TextAlign.Center
         )
 
-        Spacer(Modifier.height(7.dp))
+        Spacer(Modifier.height(6.dp))
 
         Text(
-            text = when (persona) {
-                "ultron" -> "ULTRON is ready to assist you."
-                "luna" -> "LUNA is here for you."
-                else -> "Your assistant is waiting."
-            },
-            color = accent,
+            "Your assistant will be $assistantName",
+            color = Muted,
             fontSize = 12.sp,
             textAlign = TextAlign.Center
         )
@@ -762,10 +787,11 @@ fun HomeScreen(
     val isUltron = persona == "ultron"
     val accent = if (isUltron) Blue else Purple
     val assistantName = if (isUltron) "ULTRON" else "LUNA"
+
     val characterImage = if (isUltron) {
-        R.drawable.ultron_character
+        R.drawable.ultron_character_anim
     } else {
-        R.drawable.luna_character
+        R.drawable.luna_character_anim
     }
 
     var message by rememberSaveable {
@@ -818,10 +844,10 @@ fun HomeScreen(
 
         Spacer(Modifier.weight(1f))
 
-        // CHARACTER
+        // ANIMATED CHARACTER
 
-        Image(
-            painter = painterResource(characterImage),
+        AnimatedGifImage(
+            image = characterImage,
             contentDescription = assistantName,
             modifier = Modifier
                 .fillMaxWidth()
