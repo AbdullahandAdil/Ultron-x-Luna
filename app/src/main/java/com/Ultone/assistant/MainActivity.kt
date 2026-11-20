@@ -329,7 +329,7 @@ private fun SplashScreen(
             contentAlignment = Alignment.Center
         ) {
             GifImage(
-                resource = R.drawable.app_logo,
+                resource = R.drawable.app_logo_anim,
                 loader = loader,
                 modifier = Modifier.fillMaxSize()
             )
@@ -408,7 +408,7 @@ private fun WelcomeScreen(
                 description = "Professional • Powerful",
                 color = Blue,
                 selected = selectedPersona == "ULTRON",
-                image = R.drawable.ultron_character,
+                image = R.drawable.ultron_character_anim,
                 loader = gifLoader,
                 onClick = {
                     onPersonaSelect("ULTRON")
@@ -421,7 +421,7 @@ private fun WelcomeScreen(
                 description = "Friendly • Caring",
                 color = Purple,
                 selected = selectedPersona == "LUNA",
-                image = R.drawable.luna_character,
+                image = R.drawable.luna_character_anim,
                 loader = gifLoader,
                 onClick = {
                     onPersonaSelect("LUNA")
@@ -655,9 +655,9 @@ private fun HomeScreen(
     val accent = if (isUltron) Blue else Purple
 
     val image = if (isUltron) {
-        R.drawable.ultron_character
-    } else {
-        R.drawable.luna_character
+    R.drawable.ultron_character_anim
+} else {
+    R.drawable.luna_character_anim
     }
 
     Column(
