@@ -523,7 +523,6 @@ fun AppearanceOption(
 ) {
     Column(
         Modifier
-            .weight(1f)
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(RoundedCornerShape(13.dp))
