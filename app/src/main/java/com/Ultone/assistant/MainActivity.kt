@@ -1,1156 +1,851 @@
-
 package com.ultone.assistant
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.*
+import androidx.compose.ui.draw.*
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
-import kotlinx.coroutines.delay
-import coil.ImageLoader
-import coil.compose.AsyncImage
-import coil.decode.GifDecoder
-import coil.request.ImageRequest
+import androidx.compose.ui.unit.*
 
-private val Background = Color(0xFF03050B)
-private val Panel = Color(0xFF101522)
-private val Gold = Color(0xFFFFC94A)
-private val Blue = Color(0xFF00C8FF)
-private val Purple = Color(0xFFB45CFF)
-private val White = Color(0xFFF4F5FA)
-private val Muted = Color(0xFF969DB0)
-
-// GIF IMAGE LOADER
-
-@Composable
-fun AnimatedGifImage(
-    image: Int,
-    contentDescription: String,
-    modifier: Modifier = Modifier,
-    contentScale: ContentScale = ContentScale.Fit
-) {
-    val context = LocalContext.current
-
-    val imageLoader = remember {
-        ImageLoader.Builder(context)
-            .components {
-                add(GifDecoder.Factory())
-            }
-            .build()
-    }
-
-    AsyncImage(
-        model = ImageRequest.Builder(context)
-            .data(image)
-            .crossfade(true)
-            .build(),
-        imageLoader = imageLoader,
-        contentDescription = contentDescription,
-        modifier = modifier,
-        contentScale = contentScale
-    )
-}
+private val Dark = Color(0xFF030713)
+private val Gold = Color(0xFFFFD36A)
+private val Blue = Color(0xFF00D9FF)
+private val Purple = Color(0xFFD044FF)
+private val White = Color.White
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        window.statusBarColor = android.graphics.Color.rgb(3, 7, 19)
+        window.navigationBarColor = android.graphics.Color.rgb(3, 7, 19)
+
         setContent {
-            AssistantApp()
+            MaterialTheme {
+                AssistantApp()
+            }
         }
     }
 }
 
 @Composable
 fun AssistantApp() {
+    var page by remember { mutableStateOf("welcome") }
+    var assistant by remember { mutableStateOf("ULTRON") }
+    var userName by remember { mutableStateOf("") }
+    var appearance by remember { mutableStateOf("Character") }
 
-    val context = LocalContext.current
-
-    val prefs = remember {
-        context.getSharedPreferences(
-            "ultron_luna_settings",
-            Context.MODE_PRIVATE
-        )
-    }
-
-    var persona by rememberSaveable {
-        mutableStateOf(
-            prefs.getString("persona", "") ?: ""
-        )
-    }
-
-    var userName by rememberSaveable {
-        mutableStateOf(
-            prefs.getString("user_name", "") ?: ""
-        )
-    }
-
-    var screen by rememberSaveable {
-        mutableStateOf("splash")
-    }
-
-    LaunchedEffect(Unit) {
-        delay(1100)
-        screen = if (persona.isBlank()) "welcome" else "home"
-    }
-
-    MaterialTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = Background
-        ) {
-            when (screen) {
-
-                "splash" -> SplashScreen()
-
-                "welcome" -> WelcomeScreen(
-                    selectedPersona = persona,
-                    userName = userName,
-                    onNameChange = { userName = it },
-                    onSelect = { persona = it },
-                    onSettings = { screen = "settings" },
-                    onContinue = {
-                        prefs.edit()
-                            .putString("persona", persona)
-                            .putString("user_name", userName.trim())
-                            .apply()
-
-                        userName = userName.trim()
-                        screen = "home"
-                    }
-                )
-
-                "home" -> HomeScreen(
-                    persona = persona,
-                    userName = userName,
-                    onSettings = { screen = "settings" }
-                )
-
-                "settings" -> SettingsScreen(
-                    persona = persona,
-                    userName = userName,
-                    onNameChange = {
-                        userName = it
-                        prefs.edit()
-                            .putString("user_name", it)
-                            .apply()
-                    },
-                    onPersonaChange = {
-                        persona = it
-                        prefs.edit()
-                            .putString("persona", it)
-                            .apply()
-                        screen = "home"
-                    },
-                    onBack = {
-                        screen = if (persona.isBlank()) {
-                            "welcome"
-                        } else {
-                            "home"
-                        }
-                    }
-                )
+    when (page) {
+        "welcome" -> WelcomeScreen(
+            onSelect = {
+                assistant = it
+                page = "customize"
             }
-        }
+        )
+
+        "customize" -> CustomizeScreen(
+            assistant = assistant,
+            initialName = userName,
+            initialAppearance = appearance,
+            onBack = { page = "welcome" },
+            onContinue = { name, selected ->
+                userName = name
+                appearance = selected
+                page = "home"
+            }
+        )
+
+        "home" -> HomeScreen(
+            assistant = assistant,
+            userName = userName,
+            appearance = appearance,
+            onBack = { page = "welcome" }
+        )
     }
 }
 
-// SPLASH SCREEN
+// ---------------- BACKGROUND ----------------
 
 @Composable
-fun SplashScreen() {
-
+fun AppBackground() {
     Box(
-        modifier = Modifier
+        Modifier
             .fillMaxSize()
-            .background(Background),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            AnimatedGifImage(
-                image = R.drawable.app_logo_anim,
-                contentDescription = "Crown Logo",
-                modifier = Modifier.size(145.dp)
-            )
-
-            Spacer(Modifier.height(20.dp))
-
-            Text(
-                "ULTRON x LUNA",
-                color = Gold,
-                fontSize = 25.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                "PERSONAL AI ASSISTANT",
-                color = Muted,
-                fontSize = 10.sp,
-                letterSpacing = 3.sp
-            )
-        }
-    }
-}
-
-// WELCOME SCREEN
-
-@Composable
-fun WelcomeScreen(
-    selectedPersona: String,
-    userName: String,
-    onNameChange: (String) -> Unit,
-    onSelect: (String) -> Unit,
-    onSettings: () -> Unit,
-    onContinue: () -> Unit
-) {
-
-    var menuExpanded by remember {
-        mutableStateOf(false)
-    }
-
-    val accent = when (selectedPersona) {
-        "ultron" -> Blue
-        "luna" -> Purple
-        else -> Gold
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Background)
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
-    ) {
-
-        // HEADER
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp, bottom = 22.dp)
-        ) {
-
-            Box(
-                modifier = Modifier.align(Alignment.TopStart)
-            ) {
-                HeaderIcon(
-                    symbol = "☰",
-                    onClick = { menuExpanded = true }
-                )
-
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = {
-                        menuExpanded = false
-                    },
-                    containerColor = Panel
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text("About Assistant", color = White)
-                        },
-                        onClick = { menuExpanded = false }
-                    )
-
-                    DropdownMenuItem(
-                        text = {
-                            Text("Settings", color = White)
-                        },
-                        onClick = {
-                            menuExpanded = false
-                            onSettings()
-                        }
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 65.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                AnimatedGifImage(
-                    image = R.drawable.app_logo_anim,
-                    contentDescription = "App Logo",
-                    modifier = Modifier.size(70.dp)
-                )
-
-                Text(
-                    "Personal AI Assistant",
-                    color = White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            Box(
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) {
-                HeaderIcon(
-                    symbol = "⚙",
-                    onClick = onSettings
-                )
-            }
-        }
-
-        Text(
-            "CHOOSE YOUR ASSISTANT",
-            color = Gold,
-            fontSize = 11.sp,
-            letterSpacing = 2.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 15.dp),
-            textAlign = TextAlign.Center
-        )
-
-        // TWO CARDS
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-
-            PersonaSelectionCard(
-                name = "ULTRON",
-                description = "Professional",
-                color = Blue,
-                image = R.drawable.ultron_character_anim,
-                selected = selectedPersona == "ultron",
-                modifier = Modifier.weight(1f),
-                onClick = { onSelect("ultron") }
-            )
-
-            PersonaSelectionCard(
-                name = "LUNA",
-                description = "Friendly",
-                color = Purple,
-                image = R.drawable.luna_character_anim,
-                selected = selectedPersona == "luna",
-                modifier = Modifier.weight(1f),
-                onClick = { onSelect("luna") }
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 22.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                Modifier
-                    .weight(1f)
-                    .height(1.dp)
-                    .background(Gold.copy(alpha = 0.6f))
-            )
-
-            Text("  ✦  ", color = Gold, fontSize = 20.sp)
-
-            Box(
-                Modifier
-                    .weight(1f)
-                    .height(1.dp)
-                    .background(Gold.copy(alpha = 0.6f))
-            )
-        }
-
-        Text(
-            "Your Name",
-            color = White,
-            fontSize = 23.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(Modifier.height(5.dp))
-
-        Text(
-            "Enter your name to continue",
-            color = Muted,
-            fontSize = 13.sp,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        NameInputField(
-            value = userName,
-            onValueChange = onNameChange
-        )
-
-        Spacer(Modifier.height(18.dp))
-
-        NamePreviewCard(
-            persona = selectedPersona,
-            userName = userName
-        )
-
-        Spacer(Modifier.height(22.dp))
-
-        SaveContinueButton(
-            enabled = selectedPersona.isNotBlank() &&
-                    userName.isNotBlank(),
-            color = accent,
-            onClick = onContinue
-        )
-
-        Spacer(Modifier.height(23.dp))
-
-        FooterSection()
-
-        Spacer(Modifier.height(14.dp))
-    }
-}
-
-// HEADER ICON
-
-@Composable
-fun HeaderIcon(
-    symbol: String,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .size(43.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(Panel)
-            .border(
-                1.dp,
-                Gold.copy(alpha = 0.45f),
-                RoundedCornerShape(14.dp)
-            )
-            .clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            symbol,
-            color = Gold,
-            fontSize = 24.sp
-        )
-    }
-}
-
-// PERSONA CARD
-
-@Composable
-fun PersonaSelectionCard(
-    name: String,
-    description: String,
-    color: Color,
-    image: Int,
-    selected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-
-    val borderColor by animateColorAsState(
-        targetValue = if (selected) {
-            color
-        } else {
-            color.copy(alpha = 0.35f)
-        },
-        label = "cardBorder"
-    )
-
-    Column(
-        modifier = modifier
-            .shadow(
-                elevation = if (selected) 12.dp else 3.dp,
-                shape = RoundedCornerShape(19.dp),
-                ambientColor = color.copy(alpha = 0.4f),
-                spotColor = color.copy(alpha = 0.4f)
-            )
-            .clip(RoundedCornerShape(19.dp))
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        Color(0xFF171D2C),
-                        Color(0xFF090D17)
+                        Color(0xFF020611),
+                        Color(0xFF101027),
+                        Color(0xFF030611)
                     )
                 )
             )
-            .border(
-                width = if (selected) 2.dp else 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(19.dp)
-            )
-            .clickable { onClick() }
-            .padding(9.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Canvas(Modifier.fillMaxSize()) {
+            for (i in 0..65) {
+                val x = (i * 83f) % size.width
+                val y = (i * 137f) % size.height
+
+                drawCircle(
+                    Color.White.copy(alpha = 0.28f),
+                    radius = 1.2f,
+                    center = Offset(x, y)
+                )
+            }
+        }
+    }
+}
+
+// ---------------- HEADER ----------------
+
+@Composable
+fun AppHeader(
+    color: Color,
+    onBack: (() -> Unit)? = null
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        if (onBack != null) {
+            Text(
+                "‹ BACK",
+                color = color,
+                fontSize = 18.sp,
+                modifier = Modifier.clickable { onBack() }
+            )
+        } else {
+            Text("☰", color = color, fontSize = 27.sp)
+        }
+
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(
+                painter = painterResource(R.drawable.app_logo),
+                contentDescription = "App Logo",
+                modifier = Modifier
+                    .size(58.dp)
+                    .background(Color(0xFF000000)),
+                contentScale = ContentScale.Fit
+            )
+
+            Text(
+                "Personal AI Assistant",
+                color = White,
+                fontSize = 17.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Text("⚙", color = color, fontSize = 27.sp)
+    }
+}
+
+// ---------------- WELCOME SCREEN ----------------
+
+@Composable
+fun WelcomeScreen(onSelect: (String) -> Unit) {
+    Box(Modifier.fillMaxSize()) {
+        AppBackground()
+
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AppHeader(Blue)
+
+            Spacer(Modifier.height(25.dp))
+
+            Text(
+                "CHOOSE YOUR ASSISTANT",
+                color = White,
+                fontSize = 19.sp,
+                letterSpacing = 2.sp,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(Modifier.height(25.dp))
+
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(500.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                AssistantCard(
+                    name = "ULTRON",
+                    tagline = "Power • Logic • Intelligence",
+                    color = Blue,
+                    image = R.drawable.ultron_character,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    onSelect("ULTRON")
+                }
+
+                AssistantCard(
+                    name = "LUNA",
+                    tagline = "Kindness • Care • Support",
+                    color = Purple,
+                    image = R.drawable.luna_character,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    onSelect("LUNA")
+                }
+            }
+
+            Spacer(Modifier.height(45.dp))
+
+            Text(
+                "✦  TOGETHER, ALWAYS...  ✦",
+                color = White,
+                fontSize = 15.sp,
+                letterSpacing = 2.sp
+            )
+
+            Spacer(Modifier.height(25.dp))
+        }
+    }
+}
+
+// ---------------- ASSISTANT CARD ----------------
+
+@Composable
+fun AssistantCard(
+    name: String,
+    tagline: String,
+    color: Color,
+    image: Int,
+    modifier: Modifier,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier
+            .fillMaxHeight()
+            .clip(RoundedCornerShape(25.dp))
+            .background(color.copy(alpha = 0.13f))
+            .border(2.dp, color, RoundedCornerShape(25.dp))
+            .padding(10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            if (name == "ULTRON") "◈" else "✧",
+            color = color,
+            fontSize = 32.sp
+        )
 
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(155.dp)
+                .weight(1f)
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xFF000000)),
+            contentAlignment = Alignment.Center
         ) {
-            AnimatedGifImage(
-                image = image,
+            Image(
+                painter = painterResource(image),
                 contentDescription = name,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(13.dp)),
-                contentScale = ContentScale.Fit
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
-
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(6.dp)
-                    .size(25.dp)
-                    .clip(CircleShape)
-                    .background(
-                        if (selected) color else Background.copy(alpha = 0.8f)
-                    )
-                    .border(1.dp, color, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    if (selected) "✓" else "",
-                    color = Color.White,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
         }
-
-        Spacer(Modifier.height(10.dp))
 
         Text(
             name,
             color = color,
-            fontSize = 19.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 2.sp
+            fontSize = 25.sp,
+            fontWeight = FontWeight.Black
         )
 
-        Spacer(Modifier.height(5.dp))
-
         Text(
-            description,
-            color = Muted,
-            fontSize = 11.sp,
+            tagline,
+            color = color,
+            fontSize = 10.sp,
             textAlign = TextAlign.Center
         )
 
-        Spacer(Modifier.height(10.dp))
-
-        Box(
+        Button(
+            onClick = onClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(30.dp))
-                .background(color.copy(alpha = 0.12f))
-                .border(
-                    1.dp,
-                    color.copy(alpha = 0.5f),
-                    RoundedCornerShape(30.dp)
-                )
-                .padding(vertical = 8.dp),
-            contentAlignment = Alignment.Center
+                .height(52.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = color.copy(alpha = 0.18f)
+            ),
+            shape = RoundedCornerShape(30.dp)
         ) {
+            Text("Select  ›", color = White, fontSize = 18.sp)
+        }
+    }
+}
+
+// ---------------- CUSTOMIZATION SCREEN ----------------
+
+@Composable
+fun CustomizeScreen(
+    assistant: String,
+    initialName: String,
+    initialAppearance: String,
+    onBack: () -> Unit,
+    onContinue: (String, String) -> Unit
+) {
+    val color = if (assistant == "ULTRON") Blue else Purple
+
+    var appearance by remember(assistant) {
+        mutableStateOf(initialAppearance)
+    }
+
+    var userName by remember(assistant) {
+        mutableStateOf(initialName)
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        AppBackground()
+
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+        ) {
+            AppHeader(color, onBack)
+
+            Spacer(Modifier.height(12.dp))
+
             Text(
-                if (selected) "SELECTED" else "SELECT",
+                "CUSTOMIZE YOUR $assistant",
                 color = color,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Black,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
-        }
-    }
-}
 
+            Spacer(Modifier.height(24.dp))
 
- // NAME INPUT FIELD
+            // MAIN ARTWORK AND OPTIONS
 
-@Composable
-fun NameInputField(
-    value: String,
-    onValueChange: (String) -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(15.dp))
-            .background(Panel)
-            .border(
-                1.dp,
-                Gold.copy(alpha = 0.55f),
-                RoundedCornerShape(15.dp)
-            )
-            .padding(horizontal = 17.dp, vertical = 17.dp)
-    ) {
-        if (value.isEmpty()) {
-            Text(
-                "Enter your name...",
-                color = Muted,
-                fontSize = 15.sp
-            )
-        }
-
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            singleLine = true,
-            textStyle = androidx.compose.ui.text.TextStyle(
-                color = White,
-                fontSize = 15.sp
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-}
-
-// NAME PREVIEW CARD
-
-@Composable
-fun NamePreviewCard(
-    persona: String,
-    userName: String
-) {
-    val accent = when (persona) {
-        "ultron" -> Blue
-        "luna" -> Purple
-        else -> Gold
-    }
-
-    val assistantName = when (persona) {
-        "ultron" -> "ULTRON"
-        "luna" -> "LUNA"
-        else -> "ASSISTANT"
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(17.dp))
-            .background(Panel)
-            .border(
-                1.dp,
-                accent.copy(alpha = 0.45f),
-                RoundedCornerShape(17.dp)
-            )
-            .padding(17.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            "PERSONALIZED EXPERIENCE",
-            color = accent,
-            fontSize = 10.sp,
-            letterSpacing = 2.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(Modifier.height(10.dp))
-
-        Text(
-            if (userName.isBlank()) {
-                "Hello!"
-            } else {
-                "Hello, ${userName.trim()}!"
-            },
-            color = White,
-            fontSize = 23.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(Modifier.height(6.dp))
-
-        Text(
-            "Your assistant will be $assistantName",
-            color = Muted,
-            fontSize = 12.sp,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-// SAVE AND CONTINUE BUTTON
-
-@Composable
-fun SaveContinueButton(
-    enabled: Boolean,
-    color: Color,
-    onClick: () -> Unit
-) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(58.dp)
-            .shadow(
-                elevation = if (enabled) 8.dp else 0.dp,
-                shape = RoundedCornerShape(16.dp),
-                ambientColor = color,
-                spotColor = color
-            ),
-        shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = color,
-            contentColor = Background,
-            disabledContainerColor = Color(0xFF303442),
-            disabledContentColor = Muted
-        )
-    ) {
-        Text(
-            "SAVE & CONTINUE   →",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = 1.sp
-        )
-    }
-}
-
-// FOOTER
-
-@Composable
-fun FooterSection() {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            "TOGETHER, ALWAYS...",
-            color = Gold,
-            fontSize = 11.sp,
-            letterSpacing = 3.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        Text(
-            "One Assistant. Two Personalities. Endless Possibilities.",
-            color = Muted,
-            fontSize = 10.sp,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(Modifier.height(5.dp))
-
-        Text(
-            "ULTRON x LUNA",
-            color = Muted.copy(alpha = 0.65f),
-            fontSize = 9.sp,
-            letterSpacing = 2.sp
-        )
-    }
-}
-
-// HOME SCREEN
-
-@Composable
-fun HomeScreen(
-    persona: String,
-    userName: String,
-    onSettings: () -> Unit
-) {
-    val isUltron = persona == "ultron"
-    val accent = if (isUltron) Blue else Purple
-    val assistantName = if (isUltron) "ULTRON" else "LUNA"
-
-    val characterImage = if (isUltron) {
-        R.drawable.ultron_character_anim
-    } else {
-        R.drawable.luna_character_anim
-    }
-
-    var message by rememberSaveable {
-        mutableStateOf("")
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Background)
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .padding(horizontal = 18.dp)
-    ) {
-
-        // HOME HEADER
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 17.dp, bottom = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier.weight(1f)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(370.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text(
-                    "Personal AI Assistant",
-                    color = White,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(Modifier.height(5.dp))
-
-                Text(
-                    assistantName,
-                    color = accent,
-                    fontSize = 13.sp,
-                    letterSpacing = 4.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            HeaderIcon(
-                symbol = "⚙",
-                onClick = onSettings
-            )
-        }
-
-        Spacer(Modifier.weight(1f))
-
-        // ANIMATED CHARACTER
-
-        AnimatedGifImage(
-            image = characterImage,
-            contentDescription = assistantName,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp),
-            contentScale = ContentScale.Fit
-        )
-
-        Spacer(Modifier.height(20.dp))
-
-        Text(
-            "Hello${if (userName.isNotBlank()) ", $userName" else ""}!",
-            color = White,
-            fontSize = 34.sp,
-            fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        Text(
-            if (isUltron) {
-                "Systems online. How can I assist you?"
-            } else {
-                "Hello! I'm here for you."
-            },
-            color = Muted,
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(Modifier.height(35.dp))
-
-        Text(
-            "AI CONNECTION COMING SOON",
-            color = accent,
-            fontSize = 11.sp,
-            letterSpacing = 3.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(Modifier.weight(1f))
-
-        // MESSAGE INPUT PREVIEW
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(35.dp))
-                .background(Panel)
-                .border(
-                    1.dp,
-                    accent.copy(alpha = 0.65f),
-                    RoundedCornerShape(35.dp)
-                )
-                .padding(horizontal = 20.dp, vertical = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(Modifier.weight(1f)) {
-                if (message.isEmpty()) {
-                    Text(
-                        "Message $assistantName...",
-                        color = Muted,
-                        fontSize = 15.sp
+                Box(
+                    Modifier
+                        .weight(1.05f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xFF000000))
+                        .border(1.dp, color, RoundedCornerShape(20.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    SelectedArtwork(
+                        assistant = assistant,
+                        appearance = appearance,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
 
-                BasicTextField(
-                    value = message,
-                    onValueChange = { message = it },
-                    singleLine = true,
-                    textStyle = androidx.compose.ui.text.TextStyle(
+                Column(
+                    Modifier
+                        .weight(0.95f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xFF070D1D))
+                        .border(1.dp, color, RoundedCornerShape(20.dp))
+                        .padding(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "Choose Appearance",
                         color = White,
-                        fontSize = 15.sp
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    AppearanceOption(
+                        title = "Character",
+                        subtitle = "Faceless Hero",
+                        selected = appearance == "Character",
+                        color = color,
+                        onClick = { appearance = "Character" }
+                    ) {
+                        CharacterPreview(assistant)
+                    }
+
+                    AppearanceOption(
+                        title = "Globe",
+                        subtitle = "Dynamic Planet",
+                        selected = appearance == "Globe",
+                        color = color,
+                        onClick = { appearance = "Globe" }
+                    ) {
+                        GlobeArtwork(color, Modifier.fillMaxSize())
+                    }
+
+                    AppearanceOption(
+                        title = "Energy Core",
+                        subtitle = "Power Energy",
+                        selected = appearance == "Energy Core",
+                        color = color,
+                        onClick = { appearance = "Energy Core" }
+                    ) {
+                        EnergyCoreArtwork(color, Modifier.fillMaxSize())
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(25.dp))
+
+            Text(
+                "What should $assistant call you?",
+                color = White,
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = userName,
+                onValueChange = { userName = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                placeholder = { Text("Enter Your Name...") },
+                shape = RoundedCornerShape(15.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = color,
+                    unfocusedBorderColor = color.copy(alpha = 0.5f),
+                    focusedTextColor = White,
+                    unfocusedTextColor = White,
+                    cursorColor = color
+                )
+            )
+
+            Spacer(Modifier.height(18.dp))
+
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(color.copy(alpha = 0.10f))
+                    .border(1.5.dp, color, RoundedCornerShape(20.dp))
+                    .padding(18.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Your Name Preview", color = color, fontSize = 17.sp)
+
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    if (userName.isNotBlank()) {
+                        "Hello, ${userName.trim()}!"
+                    } else {
+                        "Hello!"
+                    },
+                    color = White,
+                    fontSize = 27.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            Text(
-                "➤",
-                color = accent,
-                fontSize = 27.sp,
-                modifier = Modifier.padding(start = 12.dp)
-            )
-        }
+            Spacer(Modifier.height(25.dp))
 
-        Spacer(Modifier.height(16.dp))
-
-        Text(
-            "AI responses will be enabled in the next development stage.",
-            color = Muted,
-            fontSize = 10.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp)
-        )
-    }
-}
-
-// SETTINGS SCREEN
-
-@Composable
-fun SettingsScreen(
-    persona: String,
-    userName: String,
-    onNameChange: (String) -> Unit,
-    onPersonaChange: (String) -> Unit,
-    onBack: () -> Unit
-) {
-    var editedName by rememberSaveable(userName) {
-        mutableStateOf(userName)
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Background)
-            .statusBarsPadding()
-            .navigationBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(20.dp)
-    ) {
-
-        // SETTINGS HEADER
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            HeaderIcon(
-                symbol = "←",
-                onClick = onBack
-            )
-
-            Spacer(Modifier.width(15.dp))
-
-            Text(
-                "Settings",
-                color = White,
-                fontSize = 25.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Spacer(Modifier.height(35.dp))
-
-        Text(
-            "YOUR PROFILE",
-            color = Gold,
-            fontSize = 12.sp,
-            letterSpacing = 2.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        Text(
-            "Your Name",
-            color = White,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        Spacer(Modifier.height(10.dp))
-
-        NameInputField(
-            value = editedName,
-            onValueChange = { editedName = it }
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        Button(
-            onClick = {
-                onNameChange(editedName.trim())
-            },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Gold,
-                contentColor = Background
-            ),
-            shape = RoundedCornerShape(13.dp)
-        ) {
-            Text(
-                "SAVE NAME",
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        Spacer(Modifier.height(35.dp))
-
-        Text(
-            "CHANGE ASSISTANT",
-            color = Gold,
-            fontSize = 12.sp,
-            letterSpacing = 2.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(Modifier.height(15.dp))
-
-        SettingsPersonaOption(
-            name = "ULTRON",
-            description = "Professional • Intelligent • Powerful",
-            color = Blue,
-            selected = persona == "ultron",
-            onClick = {
-                onPersonaChange("ultron")
-            }
-        )
-
-        Spacer(Modifier.height(15.dp))
-
-        SettingsPersonaOption(
-            name = "LUNA",
-            description = "Friendly • Caring • Intelligent",
-            color = Purple,
-            selected = persona == "luna",
-            onClick = {
-                onPersonaChange("luna")
-            }
-        )
-
-        Spacer(Modifier.height(35.dp))
-
-        Text(
-            "ULTRON x LUNA",
-            color = Gold,
-            fontSize = 12.sp,
-            letterSpacing = 3.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(Modifier.height(8.dp))
-
-        Text(
-            "Personal AI Assistant",
-            color = Muted,
-            fontSize = 12.sp,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-// SETTINGS PERSONA OPTION
-
-@Composable
-fun SettingsPersonaOption(
-    name: String,
-    description: String,
-    color: Color,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(Panel)
-            .border(
-                width = if (selected) 2.dp else 1.dp,
-                color = color.copy(
-                    alpha = if (selected) 1f else 0.35f
+            Button(
+                onClick = {
+                    onContinue(userName.trim(), appearance)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(62.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = color
                 ),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(35.dp)
+            ) {
+                Text(
+                    "✓   SAVE & CONTINUE   ›",
+                    color = Dark,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(Modifier.height(22.dp))
+
+            Text(
+                "Together, Always...",
+                color = color,
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(25.dp))
+        }
+    }
+}
+
+// ---------------- APPEARANCE OPTION ----------------
+
+@Composable
+fun AppearanceOption(
+    title: String,
+    subtitle: String,
+    selected: Boolean,
+    color: Color,
+    onClick: () -> Unit,
+    artwork: @Composable () -> Unit
+) {
+    Column(
+        Modifier
+            .weight(1f)
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clip(RoundedCornerShape(13.dp))
+            .background(
+                if (selected) color.copy(alpha = 0.18f)
+                else Color(0xFF030713)
+            )
+            .border(
+                if (selected) 2.dp else 1.dp,
+                if (selected) color else Color.DarkGray,
+                RoundedCornerShape(13.dp)
             )
             .clickable { onClick() }
-            .padding(17.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(5.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            modifier = Modifier.weight(1f)
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .weight(1f)
         ) {
-            Text(
-                name,
-                color = color,
-                fontSize = 19.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 2.sp
-            )
+            artwork()
 
-            Spacer(Modifier.height(5.dp))
-
-            Text(
-                description,
-                color = Muted,
-                fontSize = 11.sp
-            )
+            if (selected) {
+                Text(
+                    "✓",
+                    color = color,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Black,
+                    modifier = Modifier.align(Alignment.TopEnd)
+                )
+            }
         }
 
         Text(
-            if (selected) "✓" else "○",
-            color = color,
-            fontSize = 25.sp,
+            title,
+            color = White,
+            fontSize = 13.sp,
             fontWeight = FontWeight.Bold
         )
+
+        Text(
+            subtitle,
+            color = color,
+            fontSize = 9.sp
+        )
+    }
+}
+
+// ---------------- CHARACTER PREVIEW ----------------
+
+@Composable
+fun CharacterPreview(assistant: String) {
+    Image(
+        painter = painterResource(
+            if (assistant == "ULTRON") {
+                R.drawable.ultron_character
+            } else {
+                R.drawable.luna_character
+            }
+        ),
+        contentDescription = "Character",
+        modifier = Modifier.fillMaxSize(),
+        contentScale = ContentScale.Crop
+    )
+}
+
+// ---------------- SELECTED ARTWORK ----------------
+
+@Composable
+fun SelectedArtwork(
+    assistant: String,
+    appearance: String,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier, contentAlignment = Alignment.Center) {
+        when (appearance) {
+            "Character" -> CharacterPreview(assistant)
+
+            "Globe" -> GlobeArtwork(
+                if (assistant == "ULTRON") Blue else Purple,
+                Modifier.fillMaxSize()
+            )
+
+            "Energy Core" -> EnergyCoreArtwork(
+                if (assistant == "ULTRON") Blue else Purple,
+                Modifier.fillMaxSize()
+            )
+        }
+    }
+}
+
+// ---------------- GLOBE ARTWORK ----------------
+
+@Composable
+fun GlobeArtwork(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier) {
+        val radius = size.minDimension * 0.32f
+        val center = Offset(size.width / 2, size.height / 2)
+
+        // Outer glow
+        drawCircle(
+            brush = Brush.radialGradient(
+                listOf(
+                    color.copy(alpha = 0.38f),
+                    Color.Transparent
+                ),
+                center = center,
+                radius = radius * 2.1f
+            ),
+            radius = radius * 2.1f,
+            center = center
+        )
+
+        // Planet
+        drawCircle(
+            brush = Brush.linearGradient(
+                listOf(
+                    Color.White.copy(alpha = 0.65f),
+                    color,
+                    Color(0xFF06133C)
+                ),
+                start = Offset(center.x - radius, center.y - radius),
+                end = Offset(center.x + radius, center.y + radius)
+            ),
+            radius = radius,
+            center = center
+        )
+
+        // Planet details
+        val land = color.copy(alpha = 0.85f)
+
+        val path = Path().apply {
+            moveTo(center.x - radius * 0.65f, center.y - radius * 0.25f)
+            lineTo(center.x - radius * 0.25f, center.y - radius * 0.65f)
+            lineTo(center.x + radius * 0.05f, center.y - radius * 0.35f)
+            lineTo(center.x - radius * 0.05f, center.y + radius * 0.05f)
+            lineTo(center.x - radius * 0.42f, center.y + radius * 0.20f)
+            close()
+        }
+
+        drawPath(path, land)
+
+        val secondLand = Path().apply {
+            moveTo(center.x + radius * 0.25f, center.y - radius * 0.10f)
+            lineTo(center.x + radius * 0.65f, center.y - radius * 0.30f)
+            lineTo(center.x + radius * 0.55f, center.y + radius * 0.25f)
+            lineTo(center.x + radius * 0.20f, center.y + radius * 0.55f)
+            lineTo(center.x + radius * 0.05f, center.y + radius * 0.15f)
+            close()
+        }
+
+        drawPath(secondLand, land.copy(alpha = 0.65f))
+
+        // Orbit rings
+        drawOval(
+            color = color.copy(alpha = 0.95f),
+            topLeft = Offset(
+                center.x - radius * 1.55f,
+                center.y - radius * 0.30f
+            ),
+            size = androidx.compose.ui.geometry.Size(
+                radius * 3.1f,
+                radius * 0.65f
+            ),
+            style = Stroke(width = 1.dp.toPx())
+        )
+
+        // Orbit light
+        drawCircle(
+            color = White,
+            radius = 3.dp.toPx(),
+            center = Offset(
+                center.x + radius * 1.35f,
+                center.y - radius * 0.30f
+            )
+        )
+    }
+}
+// ---------------- ENERGY CORE ARTWORK ----------------
+
+@Composable
+fun EnergyCoreArtwork(
+    color: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier) {
+        val center = Offset(
+            size.width / 2,
+            size.height / 2
+        )
+
+        val radius = size.minDimension * 0.30f
+
+        // Outer glow
+        drawCircle(
+            brush = Brush.radialGradient(
+                listOf(
+                    color.copy(alpha = 0.65f),
+                    color.copy(alpha = 0.20f),
+                    Color.Transparent
+                ),
+                center = center,
+                radius = radius * 2.2f
+            ),
+            radius = radius * 2.2f,
+            center = center
+        )
+
+        // Outer energy rings
+        for (i in 1..3) {
+            drawCircle(
+                color = color.copy(alpha = 0.65f / i),
+                radius = radius * (1f + i * 0.35f),
+                center = center,
+                style = Stroke(width = 2.dp.toPx())
+            )
+        }
+
+        // Main energy core
+        drawCircle(
+            brush = Brush.radialGradient(
+                listOf(
+                    Color.White,
+                    color,
+                    color.copy(alpha = 0.35f),
+                    Color.Transparent
+                ),
+                center = center,
+                radius = radius
+            ),
+            radius = radius,
+            center = center
+        )
+
+        // Inner light
+        drawCircle(
+            color = White,
+            radius = 4.dp.toPx(),
+            center = center
+        )
+    }
+}
+// ---------------- HOME SCREEN ----------------
+
+@Composable
+fun HomeScreen(
+    assistant: String,
+    userName: String,
+    appearance: String,
+    onBack: () -> Unit
+) {
+    val color = if (assistant == "ULTRON") Blue else Purple
+
+    Box(Modifier.fillMaxSize()) {
+        AppBackground()
+
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AppHeader(color)
+
+            Spacer(Modifier.height(30.dp))
+
+            Text(
+                assistant,
+                color = color,
+                fontSize = 34.sp,
+                fontWeight = FontWeight.Black
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(330.dp)
+                    .clip(RoundedCornerShape(25.dp))
+                    .background(Color(0xFF000000))
+                    .border(
+                        1.dp,
+                        color,
+                        RoundedCornerShape(25.dp)
+                    )
+            ) {
+                SelectedArtwork(
+                    assistant = assistant,
+                    appearance = appearance,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            Spacer(Modifier.height(25.dp))
+
+            Text(
+                if (userName.isNotBlank()) {
+                    "Hello, $userName!"
+                } else {
+                    "Hello!"
+                },
+                color = White,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(Modifier.height(30.dp))
+
+            Text(
+                "‹  Back to Assistant Selection",
+                color = color,
+                modifier = Modifier.clickable {
+                    onBack()
+                }
+            )
+        }
     }
 }
