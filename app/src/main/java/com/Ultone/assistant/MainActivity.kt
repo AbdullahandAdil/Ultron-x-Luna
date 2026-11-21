@@ -5,18 +5,25 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import com.ultone.assistant.components.BottomNavigationBar
+import com.ultone.assistant.data.AppPreferences
+import com.ultone.assistant.data.Persona
+import com.ultone.assistant.screens.*
+import com.ultone.assistant.theme.UltronLunaTheme
+import kotlinx.coroutines.delay
+
+enum class AppPage {
+    SPLASH, CUSTOMIZE, HOME, CHAT, AGENTS, HISTORY, ABOUT, SETTINGS
+}
 
 class MainActivity : ComponentActivity() {
 
@@ -24,7 +31,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MaterialTheme {
+            UltronLunaTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = Color(0xFF080B14)
@@ -36,84 +43,152 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-enum class AppPage {
-    SPLASH,
-    CUSTOMIZE,
-    HOME,
-    CHAT,
-    AGENTS,
-    HISTORY,
-    ABOUT,
-    SETTINGS
-}
-
-enum class Persona {
-    ULTRON,
-    LUNA
-}
-
 @Composable
 fun UltronLunaApp() {
+
+    val context = LocalContext.current
 
     var currentPage by remember {
         mutableStateOf(AppPage.SPLASH)
     }
 
     var selectedPersona by remember {
-        mutableStateOf(Persona.ULTRON)
+        mutableStateOf(AppPreferences.getPersona(context))
     }
 
     var userName by remember {
-        mutableStateOf("Boss")
+        mutableStateOf(AppPreferences.getUserName(context))
+    }
+
+    // Splash Screen Transition
+    LaunchedEffect(currentPage) {
+        if (currentPage == AppPage.SPLASH) {
+            delay(1800)
+
+            currentPage = if (
+                AppPreferences.isSetupComplete(context)
+            ) {
+                AppPage.HOME
+            } else {
+                AppPage.CUSTOMIZE
+            }
+        }
+    }
+
+    // Save Persona
+    fun updatePersona(persona: Persona) {
+        selectedPersona = persona
+        AppPreferences.savePersona(context, persona)
+    }
+
+    // Navigation
+    fun navigate(page: AppPage) {
+        currentPage = page
     }
 
     when (currentPage) {
 
         AppPage.SPLASH -> {
-            PlaceholderScreen("ULTRON X LUNA")
+            SplashScreen()
         }
 
         AppPage.CUSTOMIZE -> {
-            PlaceholderScreen("CUSTOMIZE")
+            CustomizeScreen(
+                selectedPersona = selectedPersona,
+                userName = userName,
+                onPersonaSelected = { updatePersona(it) },
+                onNameChanged = { userName = it },
+                onSave = {
+                    AppPreferences.saveUserName(context, userName)
+                    AppPreferences.savePersona(context, selectedPersona)
+                    AppPreferences.setSetupComplete(context, true)
+                    currentPage = AppPage.HOME
+                },
+                onSettingsClick = {
+                    currentPage = AppPage.SETTINGS
+                }
+            )
         }
 
         AppPage.HOME -> {
-            PlaceholderScreen(selectedPersona.name)
+            HomeScreen(
+                selectedPersona = selectedPersona,
+                userName = userName,
+                onNavigate = { navigate(it) },
+                onSettingsClick = {
+                    currentPage = AppPage.SETTINGS
+                }
+            )
         }
 
         AppPage.CHAT -> {
-            PlaceholderScreen("CHAT")
+            PageWithNavigation(
+                selectedPage = AppPage.CHAT,
+                onNavigate = { navigate(it) }
+            ) {
+                ChatScreen(
+                    selectedPersona = selectedPersona,
+                    userName = userName
+                )
+            }
         }
 
         AppPage.AGENTS -> {
-            PlaceholderScreen("AGENTS")
+            PageWithNavigation(
+                selectedPage = AppPage.AGENTS,
+                onNavigate = { navigate(it) }
+            ) {
+                AgentsScreen()
+            }
         }
 
         AppPage.HISTORY -> {
-            PlaceholderScreen("HISTORY")
+            PageWithNavigation(
+                selectedPage = AppPage.HISTORY,
+                onNavigate = { navigate(it) }
+            ) {
+                HistoryScreen()
+            }
         }
 
         AppPage.ABOUT -> {
-            PlaceholderScreen("ABOUT")
+            PageWithNavigation(
+                selectedPage = AppPage.ABOUT,
+                onNavigate = { navigate(it) }
+            ) {
+                AboutScreen()
+            }
         }
 
         AppPage.SETTINGS -> {
-            PlaceholderScreen("SETTINGS")
+            SettingsScreen(
+                selectedPersona = selectedPersona,
+                onPersonaChanged = {
+                    updatePersona(it)
+                }
+            )
         }
     }
 }
 
 @Composable
-fun PlaceholderScreen(title: String) {
-
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+fun PageWithNavigation(
+    selectedPage: AppPage,
+    onNavigate: (AppPage) -> Unit,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Text(
-            text = title,
-            color = Color.White,
-            style = MaterialTheme.typography.headlineMedium
+        Box(
+            modifier = Modifier.weight(1f)
+        ) {
+            content()
+        }
+
+        BottomNavigationBar(
+            selectedPage = selectedPage,
+            onPageSelected = onNavigate
         )
     }
 }
