@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.graphicsLayer
 
 private val AppBlack = Color(0xFF05070D)
 private val PanelColor = Color(0xFF101725)
