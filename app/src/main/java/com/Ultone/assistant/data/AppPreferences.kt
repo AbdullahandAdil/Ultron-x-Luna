@@ -2,7 +2,6 @@
 package com.ultone.assistant.data
 
 import android.content.Context
-import com.ultone.assistant.Persona
 
 object AppPreferences {
 
@@ -18,10 +17,7 @@ object AppPreferences {
             Context.MODE_PRIVATE
         )
 
-    fun saveUserName(
-        context: Context,
-        name: String
-    ) {
+    fun saveUserName(context: Context, name: String) {
         preferences(context)
             .edit()
             .putString(KEY_USER_NAME, name)
@@ -34,10 +30,7 @@ object AppPreferences {
             ?: "Boss"
     }
 
-    fun savePersona(
-        context: Context,
-        persona: Persona
-    ) {
+    fun savePersona(context: Context, persona: Persona) {
         preferences(context)
             .edit()
             .putString(KEY_PERSONA, persona.name)
@@ -53,10 +46,7 @@ object AppPreferences {
         }.getOrDefault(Persona.ULTRON)
     }
 
-    fun setSetupComplete(
-        context: Context,
-        complete: Boolean
-    ) {
+    fun setSetupComplete(context: Context, complete: Boolean) {
         preferences(context)
             .edit()
             .putBoolean(KEY_SETUP_COMPLETE, complete)
