@@ -18,7 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ultone.assistant.Persona
+import com.ultone.assistant.data.Persona
 
 private val CardGold = Color(0xFFD9AE50)
 private val CardBackground = Color(0xFF1B293D)
