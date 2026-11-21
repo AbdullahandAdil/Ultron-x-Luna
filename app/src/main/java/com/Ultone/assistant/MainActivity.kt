@@ -3,12 +3,12 @@ package com.ultone.assistant
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.weight
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -52,6 +52,10 @@ fun UltronLunaApp() {
         mutableStateOf(AppPage.SPLASH)
     }
 
+    var previousPage by remember {
+        mutableStateOf(AppPage.HOME)
+    }
+
     var selectedPersona by remember {
         mutableStateOf(AppPreferences.getPersona(context))
     }
@@ -86,6 +90,19 @@ fun UltronLunaApp() {
         currentPage = page
     }
 
+    // Open Settings
+    fun openSettings() {
+        previousPage = currentPage
+        currentPage = AppPage.SETTINGS
+    }
+
+    // Settings Back
+    BackHandler(
+        enabled = currentPage == AppPage.SETTINGS
+    ) {
+        currentPage = previousPage
+    }
+
     when (currentPage) {
 
         AppPage.SPLASH -> {
@@ -96,8 +113,12 @@ fun UltronLunaApp() {
             CustomizeScreen(
                 selectedPersona = selectedPersona,
                 userName = userName,
-                onPersonaSelected = { updatePersona(it) },
-                onNameChanged = { userName = it },
+                onPersonaSelected = {
+                    updatePersona(it)
+                },
+                onNameChanged = {
+                    userName = it
+                },
                 onSave = {
                     AppPreferences.saveUserName(context, userName)
                     AppPreferences.savePersona(context, selectedPersona)
@@ -105,18 +126,22 @@ fun UltronLunaApp() {
                     currentPage = AppPage.HOME
                 },
                 onSettingsClick = {
-                    currentPage = AppPage.SETTINGS
+                    openSettings()
                 }
             )
         }
 
         AppPage.HOME -> {
+            // HomeScreen already contains BottomNavigationBar.
+            // Do not wrap it in PageWithNavigation.
             HomeScreen(
                 selectedPersona = selectedPersona,
                 userName = userName,
-                onNavigate = { navigate(it) },
+                onNavigate = {
+                    navigate(it)
+                },
                 onSettingsClick = {
-                    currentPage = AppPage.SETTINGS
+                    openSettings()
                 }
             )
         }
