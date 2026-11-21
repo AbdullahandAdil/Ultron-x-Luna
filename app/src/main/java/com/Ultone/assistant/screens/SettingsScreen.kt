@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ultone.assistant.Persona
+import com.ultone.assistant.data.Persona
 
 private val SettingsGold = Color(0xFFD9AE50)
 private val SettingsDark = Color(0xFF080B14)
