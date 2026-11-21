@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -19,7 +20,7 @@ import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.decode.GifDecoder
 import com.ultone.assistant.AppPage
-import com.ultone.assistant.Persona
+import com.ultone.assistant.data.Persona
 import com.ultone.assistant.R
 import com.ultone.assistant.components.BottomNavigationBar
 
@@ -48,9 +49,7 @@ fun HomeScreen(
         Persona.LUNA -> R.drawable.luna_character_anim
     }
 
-    val greeting = when (
-        java.time.LocalTime.now().hour
-    ) {
+    val greeting = when (java.time.LocalTime.now().hour) {
         in 5..11 -> "Good Morning"
         in 12..16 -> "Good Afternoon"
         in 17..20 -> "Good Evening"
@@ -72,7 +71,6 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Text(
                 text = "☰",
                 color = Color.White,
@@ -87,9 +85,7 @@ fun HomeScreen(
                 letterSpacing = 3.sp
             )
 
-            androidx.compose.material3.IconButton(
-                onClick = onSettingsClick
-            ) {
+            IconButton(onClick = onSettingsClick) {
                 Text(
                     text = "⚙",
                     color = Color.White,
@@ -127,7 +123,6 @@ fun HomeScreen(
                     .background(Color(0xFF111C2C)),
                 contentAlignment = Alignment.Center
             ) {
-
                 AsyncImage(
                     model = characterImage,
                     imageLoader = imageLoader,
