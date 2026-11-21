@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ultone.assistant.Persona
+import com.ultone.assistant.data.Persona
 
 private val ChatGold = Color(0xFFD9AE50)
 private val ChatDark = Color(0xFF080B14)
@@ -34,7 +34,6 @@ fun ChatScreen(
             .background(ChatDark)
             .padding(16.dp)
     ) {
-
         Text(
             text = "${selectedPersona.name} CHAT",
             color = ChatGold,
@@ -59,7 +58,6 @@ fun ChatScreen(
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             item {
                 ChatBubble(
                     text = "Hello $userName! I'm ${selectedPersona.name}. How can I help you?",
@@ -72,7 +70,6 @@ fun ChatScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             OutlinedTextField(
                 value = message,
                 onValueChange = {
