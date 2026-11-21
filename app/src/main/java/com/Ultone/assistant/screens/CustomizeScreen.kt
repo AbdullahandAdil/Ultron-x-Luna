@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,7 +20,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ultone.assistant.Persona
+import com.ultone.assistant.data.Persona
 import com.ultone.assistant.R
 
 private val Gold = Color(0xFFD9AE50)
@@ -35,9 +36,7 @@ fun CustomizeScreen(
     onSave: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
-    val greeting = when (
-        java.time.LocalTime.now().hour
-    ) {
+    val greeting = when (java.time.LocalTime.now().hour) {
         in 5..11 -> "Good Morning"
         in 12..16 -> "Good Afternoon"
         in 17..20 -> "Good Evening"
@@ -64,9 +63,7 @@ fun CustomizeScreen(
                 modifier = Modifier.size(54.dp)
             )
 
-            androidx.compose.material3.IconButton(
-                onClick = onSettingsClick
-            ) {
+            IconButton(onClick = onSettingsClick) {
                 Text("⚙", color = Color.White, fontSize = 25.sp)
             }
         }
@@ -108,9 +105,7 @@ fun CustomizeScreen(
                 selected = selectedPersona == Persona.ULTRON,
                 imageId = R.drawable.ultron_character,
                 subtitle = "Professional • Intelligent • Powerful",
-                onClick = {
-                    onPersonaSelected(Persona.ULTRON)
-                }
+                onClick = { onPersonaSelected(Persona.ULTRON) }
             )
 
             PersonaChoiceCard(
@@ -119,9 +114,7 @@ fun CustomizeScreen(
                 selected = selectedPersona == Persona.LUNA,
                 imageId = R.drawable.luna_character,
                 subtitle = "Caring • Intelligent • Friendly",
-                onClick = {
-                    onPersonaSelected(Persona.LUNA)
-                }
+                onClick = { onPersonaSelected(Persona.LUNA) }
             )
         }
 
@@ -146,23 +139,13 @@ fun CustomizeScreen(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    CardDark,
-                    RoundedCornerShape(12.dp)
-                )
-                .border(
-                    1.dp,
-                    Gold,
-                    RoundedCornerShape(12.dp)
-                )
+                .background(CardDark, RoundedCornerShape(12.dp))
+                .border(1.dp, Gold, RoundedCornerShape(12.dp))
                 .padding(16.dp),
             decorationBox = { innerTextField ->
                 Box {
                     if (userName.isEmpty()) {
-                        Text(
-                            "Enter your name",
-                            color = Color.Gray
-                        )
+                        Text("Enter your name", color = Color.Gray)
                     }
                     innerTextField()
                 }
@@ -232,10 +215,7 @@ private fun PersonaChoiceCard(
                 color = if (selected) Gold else Color.DarkGray,
                 shape = RoundedCornerShape(18.dp)
             )
-            .background(
-                CardDark,
-                RoundedCornerShape(18.dp)
-            )
+            .background(CardDark, RoundedCornerShape(18.dp))
             .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -275,9 +255,7 @@ private fun PersonaChoiceCard(
                 contentColor = if (selected) Color.Black else Color.White
             )
         ) {
-            Text(
-                if (selected) "✓ SELECTED" else "SELECT"
-            )
+            Text(if (selected) "✓ SELECTED" else "SELECT")
         }
     }
 }
