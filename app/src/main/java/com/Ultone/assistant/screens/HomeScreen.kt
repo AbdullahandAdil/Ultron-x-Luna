@@ -1,24 +1,34 @@
 
 package com.ultone.assistant.screens
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
@@ -35,6 +45,7 @@ import java.util.Locale
 
 private val HomeGold = Color(0xFFD9AE50)
 private val HomeBackground = Color(0xFF080B14)
+private val HomeCard = Color(0xFF111C2C)
 private val HoloBlue = Color(0xFF35DFFF)
 
 @Composable
@@ -48,6 +59,22 @@ fun HomeScreen(
 
     var currentDateTime by remember {
         mutableStateOf(LocalDateTime.now())
+    }
+
+    var selectedCountry by remember {
+        mutableStateOf("India")
+    }
+
+    var selectedState by remember {
+        mutableStateOf("Uttar Pradesh")
+    }
+
+    var showCountryDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var showStateDialog by remember {
+        mutableStateOf(false)
     }
 
     LaunchedEffect(Unit) {
@@ -78,11 +105,29 @@ fun HomeScreen(
     }
 
     val dateText = currentDateTime.format(
-        DateTimeFormatter.ofPattern("EEEE, dd MMM yyyy", Locale.getDefault())
+        DateTimeFormatter.ofPattern(
+            "EEEE, dd MMM yyyy",
+            Locale.getDefault()
+        )
     )
 
     val timeText = currentDateTime.format(
-        DateTimeFormatter.ofPattern("hh:mm:ss a", Locale.getDefault())
+        DateTimeFormatter.ofPattern(
+            "hh:mm:ss a",
+            Locale.getDefault()
+        )
+    )
+
+    val breathing = rememberInfiniteTransition(label = "characterBreathing")
+
+    val characterScale by breathing.animateFloat(
+        initialValue = 0.985f,
+        targetValue = 1.025f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1400),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "characterScale"
     )
 
     Column(
@@ -91,165 +136,341 @@ fun HomeScreen(
             .background(HomeBackground)
     ) {
 
-        // TOP HEADER
+        // HEADER
 
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .height(58.dp)
+                .padding(horizontal = 20.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "☰",
-                color = Color.White,
-                fontSize = 27.sp
-            )
-
             Text(
                 text = selectedPersona.name,
                 color = HomeGold,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp
+                letterSpacing = 3.sp,
+                modifier = Modifier.align(Alignment.Center)
             )
 
-            IconButton(onClick = onSettingsClick) {
+            Text(
+                text = "☰",
+                color = Color.White,
+                fontSize = 29.sp,
+                modifier = Modifier.align(Alignment.CenterStart)
+            )
+
+            IconButton(
+                onClick = onSettingsClick,
+                modifier = Modifier.align(Alignment.CenterEnd)
+            ) {
                 Text(
                     text = "⚙",
                     color = Color.White,
-                    fontSize = 25.sp
+                    fontSize = 27.sp
                 )
             }
         }
 
-        // MAIN CONTENT
+        // HEADER LINE
 
-        Column(
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp)
+                .height(1.dp)
+                .background(Color(0xFF263448))
+        )
+
+        // MAIN CONTENT - NO SCROLL
+
+        BoxWithConstraints(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(horizontal = 16.dp)
         ) {
+            val availableHeight = maxHeight
 
-            Spacer(modifier = Modifier.height(5.dp))
+            val characterSize = (availableHeight * 0.35f)
+                .coerceIn(145.dp, 225.dp)
 
-            Text(
-                text = "$greeting, ${userName.ifBlank { "Boss" }}!",
-                color = Color.White,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // ANIMATED CHARACTER
-
-            Box(
-                modifier = Modifier
-                    .size(235.dp)
-                    .offset(y = (-8).dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF111C2C)),
-                contentAlignment = Alignment.Center
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AsyncImage(
-                    model = characterImage,
-                    imageLoader = imageLoader,
-                    contentDescription = "${selectedPersona.name} animated character",
+
+                // GREETING
+
+                Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                )
+                        .fillMaxWidth()
+                        .weight(0.075f),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = "$greeting, ${userName.ifBlank { "Boss" }}!",
+                        color = Color.White,
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1
+                    )
+                }
+
+                // 3D CHARACTER
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.39f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(characterSize + 16.dp)
+                            .scale(characterScale)
+                            .shadow(
+                                elevation = 22.dp,
+                                shape = CircleShape,
+                                ambientColor = when (selectedPersona) {
+                                    Persona.ULTRON -> Color.Cyan
+                                    Persona.LUNA -> Color.Magenta
+                                },
+                                spotColor = when (selectedPersona) {
+                                    Persona.ULTRON -> Color.Cyan
+                                    Persona.LUNA -> Color.Magenta
+                                }
+                            )
+                            .border(
+                                width = 2.dp,
+                                color = when (selectedPersona) {
+                                    Persona.ULTRON -> Color(0xFF27DFFF)
+                                    Persona.LUNA -> Color(0xFFB44CFF)
+                                }.copy(alpha = 0.75f),
+                                shape = CircleShape
+                            )
+                            .padding(5.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AsyncImage(
+                            model = characterImage,
+                            imageLoader = imageLoader,
+                            contentDescription = "${selectedPersona.name} animated character",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                    }
+                }
+
+                // PERSONA NAME AND VOICE STATUS
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.15f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = selectedPersona.name,
+                        color = HomeGold,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 3.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "I'm listening for my name...",
+                        color = Color.LightGray,
+                        fontSize = 12.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(5.dp))
+
+                    Text(
+                        text = "Say ${selectedPersona.name} to activate",
+                        color = Color(0xFF8B9BB2),
+                        fontSize = 11.sp
+                    )
+                }
+
+                // DATE + TIME CONTAINER
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.15f)
+                        .clip(RoundedCornerShape(15.dp))
+                        .background(HomeCard)
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "DATE",
+                            color = HoloBlue,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.5.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(7.dp))
+
+                        Text(
+                            text = dateText,
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(38.dp)
+                            .background(Color(0xFF293B50))
+                    )
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "LOCAL TIME",
+                            color = HoloBlue,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.5.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(7.dp))
+
+                        Text(
+                            text = timeText,
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // TEMPERATURE CONTAINER
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.12f)
+                        .clip(RoundedCornerShape(15.dp))
+                        .background(HomeCard)
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "TEMPERATURE",
+                        color = HoloBlue,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
+
+                    Text(
+                        text = "-- °C",
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Text(
+                        text = "-- °F",
+                        color = Color.White,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // WORLD MAP AREA
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.29f)
+                        .clip(RoundedCornerShape(17.dp))
+                        .background(HomeCard)
+                        .padding(9.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "GLOBAL MAP",
+                            color = HoloBlue,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.5.sp
+                        )
+
+                        Text(
+                            text = "◎ Location access needed",
+                            color = Color(0xFF8B9BB2),
+                            fontSize = 9.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(7.dp)
+                    ) {
+                        TextButton(
+                            onClick = { showCountryDialog = true }
+                        ) {
+                            Text(
+                                text = "🌐 $selectedCountry",
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                maxLines = 1
+                            )
+                        }
+
+                        TextButton(
+                            onClick = { showStateDialog = true }
+                        ) {
+                            Text(
+                                text = "⌄ $selectedState",
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                maxLines = 1
+                            )
+                        }
+                    }
+
+                    HolographicWorldMap(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
+                }
             }
-
-            Text(
-                text = selectedPersona.name,
-                color = HomeGold,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp
-            )
-
-            Spacer(modifier = Modifier.height(5.dp))
-
-            Text(
-                text = "I'm listening for my name...",
-                color = Color.LightGray,
-                fontSize = 12.sp
-            )
-
-            Text(
-                text = "Say ${selectedPersona.name} to activate",
-                color = Color(0xFF8B9BB2),
-                fontSize = 11.sp
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // DATE AND TIME
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                InfoCard(
-                    title = "DATE",
-                    value = dateText,
-                    modifier = Modifier.weight(1f)
-                )
-
-                InfoCard(
-                    title = "LOCAL TIME",
-                    value = timeText,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // LOCATION AND TEMPERATURE
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                InfoCard(
-                    title = "CURRENT LOCATION",
-                    value = "Waiting for permission",
-                    modifier = Modifier.weight(1f)
-                )
-
-                InfoCard(
-                    title = "TEMPERATURE",
-                    value = "-- °C",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(18.dp))
-
-            // HOLOGRAPHIC WORLD MAP
-
-            Text(
-                text = "GLOBAL CONNECTION",
-                color = HoloBlue,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            HolographicWorldMap(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(135.dp)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
         }
 
         // BOTTOM NAVIGATION
@@ -259,37 +480,126 @@ fun HomeScreen(
             onPageSelected = onNavigate
         )
     }
-}
 
-@Composable
-private fun InfoCard(
-    title: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(13.dp))
-            .background(Color(0xFF111C2C))
-            .padding(horizontal = 11.dp, vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = title,
-            color = HoloBlue,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp
+    // COUNTRY SELECTOR
+
+    if (showCountryDialog) {
+        val countries = listOf(
+            "India",
+            "United States",
+            "United Kingdom",
+            "United Arab Emirates",
+            "Saudi Arabia",
+            "Pakistan",
+            "Bangladesh",
+            "Canada",
+            "Australia",
+            "Japan",
+            "Other"
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        AlertDialog(
+            onDismissRequest = {
+                showCountryDialog = false
+            },
+            title = {
+                Text("Select Country")
+            },
+            text = {
+                Column {
+                    countries.forEach { country ->
+                        TextButton(
+                            onClick = {
+                                selectedCountry = country
+                                selectedState = "Select state"
+                                showCountryDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = country,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCountryDialog = false
+                    }
+                ) {
+                    Text("Close")
+                }
+            },
+            containerColor = HomeCard,
+            titleContentColor = HoloBlue,
+            textContentColor = Color.White
+        )
+    }
 
-        Text(
-            text = value,
-            color = Color.White,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1
+    // STATE SELECTOR
+
+    if (showStateDialog) {
+        val states = if (selectedCountry == "India") {
+            listOf(
+                "Uttar Pradesh",
+                "Delhi",
+                "Bihar",
+                "Maharashtra",
+                "Madhya Pradesh",
+                "Rajasthan",
+                "West Bengal",
+                "Gujarat",
+                "Punjab",
+                "Haryana",
+                "Other"
+            )
+        } else {
+            listOf(
+                "Select state / region",
+                "Other"
+            )
+        }
+
+        AlertDialog(
+            onDismissRequest = {
+                showStateDialog = false
+            },
+            title = {
+                Text("Select State / Region")
+            },
+            text = {
+                Column {
+                    states.forEach { state ->
+                        TextButton(
+                            onClick = {
+                                selectedState = state
+                                showStateDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = state,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showStateDialog = false
+                    }
+                ) {
+                    Text("Close")
+                }
+            },
+            containerColor = HomeCard,
+            titleContentColor = HoloBlue,
+            textContentColor = Color.White
         )
     }
 }
@@ -298,33 +608,49 @@ private fun InfoCard(
 private fun HolographicWorldMap(
     modifier: Modifier = Modifier
 ) {
+    val mapAnimation = rememberInfiniteTransition(
+        label = "mapAnimation"
+    )
+
+    val glowAlpha by mapAnimation.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 0.9f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1300),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "mapGlow"
+    )
+
     Canvas(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(Color(0xFF0B1727))
-            .padding(8.dp)
+            .padding(5.dp)
     ) {
         val w = size.width
         val h = size.height
 
-        // MAP GRID
+        // HOLOGRAPHIC GRID
 
         for (i in 1..5) {
             val y = h * i / 6f
+
             drawLine(
                 color = HoloBlue.copy(alpha = 0.13f),
-                start = androidx.compose.ui.geometry.Offset(0f, y),
-                end = androidx.compose.ui.geometry.Offset(w, y),
+                start = Offset(0f, y),
+                end = Offset(w, y),
                 strokeWidth = 1f
             )
         }
 
         for (i in 1..9) {
             val x = w * i / 10f
+
             drawLine(
                 color = HoloBlue.copy(alpha = 0.13f),
-                start = androidx.compose.ui.geometry.Offset(x, 0f),
-                end = androidx.compose.ui.geometry.Offset(x, h),
+                start = Offset(x, 0f),
+                end = Offset(x, h),
                 strokeWidth = 1f
             )
         }
@@ -397,7 +723,7 @@ private fun HolographicWorldMap(
             drawPath(
                 path = path,
                 color = HoloBlue.copy(alpha = 0.85f),
-                style = Stroke(width = 1.6f)
+                style = Stroke(width = 1.5f)
             )
         }
 
@@ -417,14 +743,14 @@ private fun HolographicWorldMap(
 
             drawCircle(
                 color = HoloBlue.copy(alpha = 0.20f),
-                radius = 8.dp.toPx(),
-                center = androidx.compose.ui.geometry.Offset(x, y)
+                radius = 9.dp.toPx(),
+                center = Offset(x, y)
             )
 
             drawCircle(
-                color = HoloBlue,
-                radius = 2.5.dp.toPx(),
-                center = androidx.compose.ui.geometry.Offset(x, y)
+                color = HoloBlue.copy(alpha = glowAlpha),
+                radius = 3.dp.toPx(),
+                center = Offset(x, y)
             )
         }
     }
