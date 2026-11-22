@@ -35,6 +35,9 @@ import com.ultone.assistant.R
 import com.ultone.assistant.data.Persona
 import kotlinx.coroutines.delay
 import java.util.Calendar
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 
 private val Gold = Color(0xFFFFD36E)
 private val Dark = Color(0xFF080B14)
@@ -110,21 +113,26 @@ fun CustomizeScreen(
             }
 
             Image(
-                painter = painterResource(R.drawable.app_logo),
-                contentDescription = "App Logo",
-                modifier = Modifier.size(60.dp)
-            )
+    painter = painterResource(R.drawable.app_logo),
+    contentDescription = "App Logo",
+    modifier = Modifier
+        .size(54.dp)
+        .graphicsLayer {
+            compositingStrategy = CompositingStrategy.Offscreen
+            blendMode = BlendMode.Screen
+        }
+)
 
             Box(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 IconButton(onClick = onSettingsClick) {
-                    Text(
-                        text = "⚙",
-                        color = Gold,
-                        fontSize = 30.sp
-                    )
+    Text(
+        text = "⚙",
+        color = Gold,
+        fontSize = 30.sp
+    )
                 }
             }
         }
