@@ -212,7 +212,7 @@ fun HomeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.075f),
-                contentAlignment = Alignment.CenterEnd
+                contentAlignment = Alignment.Centerstart
             ) {
                 Text(
                     text = buildAnnotatedString {
@@ -306,14 +306,6 @@ fun HomeScreen(
                     color = Color.LightGray,
                     fontSize = 12.sp
                 )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = "Say ${selectedPersona.name} to activate",
-                    color = Color(0xFF8B9BB2),
-                    fontSize = 11.sp
-                )
             }
 
             // FOUR CONTAINERS - 2 x 2
@@ -388,12 +380,14 @@ fun HomeScreen(
                             .padding(9.dp)
                     ) {
                         Text(
-                            text = "WORLD MAP",
-                            color = themeColor,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
-                        )
+    text = "WORLD MAP",
+    color = themeColor,
+    fontSize = 13.sp,
+    fontWeight = FontWeight.Bold,
+    letterSpacing = 1.sp,
+    modifier = Modifier.fillMaxWidth(),
+    textAlign = TextAlign.Center
+)
 
                         Spacer(modifier = Modifier.height(5.dp))
 
