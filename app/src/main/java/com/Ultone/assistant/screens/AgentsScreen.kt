@@ -2,6 +2,7 @@
 package com.ultone.assistant.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
