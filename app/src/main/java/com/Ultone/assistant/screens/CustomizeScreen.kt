@@ -3,7 +3,11 @@ package com.ultone.assistant.screens
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,19 +29,18 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ultone.assistant.R
 import com.ultone.assistant.data.Persona
 import kotlinx.coroutines.delay
 import java.util.Calendar
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
 
 private val Gold = Color(0xFFFFD36E)
 private val Dark = Color(0xFF080B14)
@@ -55,6 +58,10 @@ fun CustomizeScreen(
     onSave: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
+    // Screen khulte hi koi persona selected nahi hoga.
+    var chosenPersona by remember {
+        mutableStateOf<Persona?>(null)
+    }
 
     var currentHour by remember {
         mutableIntStateOf(
@@ -100,7 +107,6 @@ fun CustomizeScreen(
                 .height(68.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             Box(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.CenterStart
@@ -113,26 +119,21 @@ fun CustomizeScreen(
             }
 
             Image(
-    painter = painterResource(R.drawable.app_logo),
-    contentDescription = "App Logo",
-    modifier = Modifier
-        .size(54.dp)
-        .graphicsLayer {
-            compositingStrategy = CompositingStrategy.Offscreen
-            blendMode = BlendMode.Screen
-        }
-)
+                painter = painterResource(R.drawable.app_logo),
+                contentDescription = "App Logo",
+                modifier = Modifier.size(54.dp)
+            )
 
             Box(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.CenterEnd
             ) {
                 IconButton(onClick = onSettingsClick) {
-    Text(
-        text = "⚙",
-        color = Gold,
-        fontSize = 30.sp
-    )
+                    Text(
+                        text = "⚙",
+                        color = Gold,
+                        fontSize = 30.sp
+                    )
                 }
             }
         }
@@ -142,35 +143,35 @@ fun CustomizeScreen(
         Text(
             text = "PERSONAL AI ASSISTANT",
             color = Gold,
-            fontSize = 17.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 4.sp,
+            letterSpacing = 3.sp,
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(60.dp))
+        Spacer(modifier = Modifier.height(42.dp))
 
         // MAIN HEADING
 
         Text(
             text = "CHOOSE YOUR PERSONALITY",
             color = Color(0xFFE7ECF8),
-            fontSize = 21.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 1.5.sp,
+            letterSpacing = 1.sp,
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         Text(
             text = "One assistant. Two unique personalities.",
             color = MutedText,
-            fontSize = 16.sp,
+            fontSize = 13.sp,
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(42.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
         // PERSONA CARDS
 
@@ -178,15 +179,15 @@ fun CustomizeScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             PersonaChoiceCard(
                 modifier = Modifier.weight(1f),
                 persona = Persona.ULTRON,
-                selected = selectedPersona == Persona.ULTRON,
+                selected = chosenPersona == Persona.ULTRON,
                 imageId = R.drawable.ultron_character,
                 subtitle = "Professional • Intelligent • Powerful",
                 accent = UltronCyan,
                 onClick = {
+                    chosenPersona = Persona.ULTRON
                     onPersonaSelected(Persona.ULTRON)
                 }
             )
@@ -194,17 +195,18 @@ fun CustomizeScreen(
             PersonaChoiceCard(
                 modifier = Modifier.weight(1f),
                 persona = Persona.LUNA,
-                selected = selectedPersona == Persona.LUNA,
+                selected = chosenPersona == Persona.LUNA,
                 imageId = R.drawable.luna_character,
                 subtitle = "Caring • Intelligent • Friendly",
                 accent = LunaPurple,
                 onClick = {
+                    chosenPersona = Persona.LUNA
                     onPersonaSelected(Persona.LUNA)
                 }
             )
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(34.dp))
 
         // GREETING PREVIEW
 
@@ -214,20 +216,20 @@ fun CustomizeScreen(
             userName = userName
         )
 
-        Spacer(modifier = Modifier.height(42.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
         // NAME INPUT
 
         Text(
             text = "WHAT SHOULD I CALL YOU?",
             color = Color(0xFFE7ECF8),
-            fontSize = 16.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 1.sp,
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(26.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         BasicTextField(
             value = userName,
@@ -235,22 +237,22 @@ fun CustomizeScreen(
             singleLine = true,
             textStyle = TextStyle(
                 color = Color(0xFFE7ECF8),
-                fontSize = 19.sp
+                fontSize = 18.sp
             ),
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
                     CardDark,
-                    RoundedCornerShape(22.dp)
+                    RoundedCornerShape(18.dp)
                 )
                 .border(
-                    1.5.dp,
+                    1.dp,
                     Color(0xFF344158),
-                    RoundedCornerShape(22.dp)
+                    RoundedCornerShape(18.dp)
                 )
                 .padding(
                     horizontal = 18.dp,
-                    vertical = 22.dp
+                    vertical = 19.dp
                 ),
             decorationBox = { innerTextField ->
                 Box {
@@ -258,7 +260,7 @@ fun CustomizeScreen(
                         Text(
                             "Enter your name",
                             color = MutedText,
-                            fontSize = 19.sp
+                            fontSize = 18.sp
                         )
                     }
                     innerTextField()
@@ -266,57 +268,64 @@ fun CustomizeScreen(
             }
         )
 
-        Spacer(modifier = Modifier.height(42.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
         // SAVE BUTTON
 
         Button(
-            onClick = onSave,
+            onClick = {
+                if (chosenPersona != null) {
+                    onSave()
+                }
+            },
+            enabled = chosenPersona != null,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(62.dp)
+                .height(58.dp)
                 .shadow(
-                    12.dp,
-                    RoundedCornerShape(22.dp),
-                    ambientColor = Gold.copy(alpha = 0.25f),
-                    spotColor = Gold.copy(alpha = 0.35f)
+                    elevation = 10.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    ambientColor = Gold.copy(alpha = 0.20f),
+                    spotColor = Gold.copy(alpha = 0.25f)
                 ),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Gold,
-                contentColor = Color(0xFF15100A)
+                contentColor = Color(0xFF15100A),
+                disabledContainerColor = Color(0xFF394052),
+                disabledContentColor = Color(0xFF929DB2)
             ),
-            shape = RoundedCornerShape(22.dp)
+            shape = RoundedCornerShape(20.dp)
         ) {
             Text(
                 text = "SAVE & CONTINUE",
-                fontSize = 19.sp,
+                fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
+                letterSpacing = 1.5.sp
             )
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(38.dp))
 
         // FOOTER
 
         Text(
             text = "TOGETHER, ALWAYS...",
             color = Gold,
-            fontSize = 17.sp,
+            fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
-            letterSpacing = 3.sp
+            letterSpacing = 2.5.sp
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         Text(
             text = "One Assistant. Two Personalities. Endless Possibilities.",
             color = MutedText,
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(35.dp))
+        Spacer(modifier = Modifier.height(28.dp))
     }
 }
 
@@ -333,135 +342,108 @@ private fun PersonaChoiceCard(
     accent: Color,
     onClick: () -> Unit
 ) {
+    val lift by animateDpAsState(
+        targetValue = if (selected) (-9).dp else 0.dp,
+        animationSpec = tween(300),
+        label = "cardLift"
+    )
 
     val borderWidth by animateDpAsState(
-        targetValue = if (selected) 2.5.dp else 1.dp,
-        animationSpec = tween(300)
+        targetValue = if (selected) 2.dp else 1.dp,
+        animationSpec = tween(300),
+        label = "cardBorderWidth"
     )
 
     val borderColor by animateColorAsState(
         targetValue = if (selected) accent else Color(0xFF293449),
-        animationSpec = tween(350)
+        animationSpec = tween(300),
+        label = "cardBorderColor"
     )
 
     val elevation by animateDpAsState(
-        targetValue = if (selected) 13.dp else 2.dp,
-        animationSpec = tween(350)
-    )
-
-    val infiniteTransition = rememberInfiniteTransition()
-
-    val glowPulse by infiniteTransition.animateFloat(
-        initialValue = 0.94f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1300),
-            repeatMode = RepeatMode.Reverse
-        )
+        targetValue = if (selected) 15.dp else 3.dp,
+        animationSpec = tween(300),
+        label = "cardElevation"
     )
 
     Column(
         modifier = modifier
-            .graphicsLayer {
-                if (selected) {
-                    scaleX = glowPulse
-                    scaleY = glowPulse
-                }
-            }
+            .offset(y = lift)
             .shadow(
                 elevation = elevation,
-                shape = RoundedCornerShape(30.dp),
-                ambientColor = accent.copy(alpha = 0.25f),
-                spotColor = accent.copy(alpha = 0.30f)
+                shape = RoundedCornerShape(24.dp),
+                ambientColor = accent.copy(alpha = 0.20f),
+                spotColor = accent.copy(alpha = 0.25f)
             )
             .border(
                 width = borderWidth,
                 color = borderColor,
-                shape = RoundedCornerShape(30.dp)
+                shape = RoundedCornerShape(24.dp)
             )
             .background(
                 Color(0xFF0D1523),
-                RoundedCornerShape(30.dp)
+                RoundedCornerShape(24.dp)
             )
             .clickable(onClick = onClick)
-            .padding(10.dp),
+            .padding(9.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // PHOTO WITH SOFT ROUNDED CORNERS
 
-        Box(
+        Image(
+            painter = painterResource(imageId),
+            contentDescription = persona.name,
+            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(178.dp)
-                .clip(RoundedCornerShape(23.dp))
-        ) {
-
-            Image(
-                painter = painterResource(imageId),
-                contentDescription = persona.name,
-                modifier = Modifier.fillMaxSize()
-            )
-
-            if (selected) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .size(42.dp)
-                        .background(
-                            accent,
-                            RoundedCornerShape(50)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "✓",
-                        color = Color.Black,
-                        fontSize = 25.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = persona.name,
-            color = accent,
-            fontSize = 21.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.5.sp
+                .height(145.dp)
+                .clip(RoundedCornerShape(13.dp))
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = subtitle,
-            color = Color(0xFFE0E5F0),
-            fontSize = 10.sp,
-            lineHeight = 17.sp,
-            textAlign = TextAlign.Center,
-            minLines = 2
+            text = persona.name,
+            color = accent,
+            fontSize = 19.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
         )
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(7.dp))
+
+        // SUBTITLE IN ONE LINE
+
+        Text(
+            text = subtitle,
+            color = Color(0xFFE0E5F0),
+            fontSize = 8.sp,
+            lineHeight = 11.sp,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(13.dp))
 
         Button(
             onClick = onClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp),
+                .height(42.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = if (selected) accent else Color(0xFF26344A),
                 contentColor = if (selected) Color.Black else Color.White
             ),
-            shape = RoundedCornerShape(18.dp)
+            shape = RoundedCornerShape(14.dp)
         ) {
             Text(
                 text = if (selected) "✓ SELECTED" else "SELECT",
-                fontSize = 13.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
+                letterSpacing = 0.5.sp
             )
         }
     }
@@ -476,7 +458,6 @@ private fun GreetingPreviewCard(
     icon: String,
     userName: String
 ) {
-
     val gradient = Brush.linearGradient(
         colors = listOf(
             UltronCyan,
@@ -485,16 +466,29 @@ private fun GreetingPreviewCard(
         )
     )
 
+    val floatingTransition = rememberInfiniteTransition()
+
+    val floatingOffset by floatingTransition.animateFloat(
+        initialValue = -5f,
+        targetValue = 5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1800),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .graphicsLayer {
+                translationY = floatingOffset
+            }
             .background(
                 gradient,
-                RoundedCornerShape(34.dp)
+                RoundedCornerShape(28.dp)
             )
             .padding(1.5.dp)
     ) {
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -505,46 +499,45 @@ private fun GreetingPreviewCard(
                             Color(0xFF171225)
                         )
                     ),
-                    RoundedCornerShape(33.dp)
+                    RoundedCornerShape(27.dp)
                 )
                 .padding(
                     horizontal = 16.dp,
-                    vertical = 30.dp
+                    vertical = 23.dp
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Text(
                 text = "GREETING PREVIEW",
                 color = MutedText,
-                fontSize = 14.sp,
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp
+                letterSpacing = 2.sp
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             Text(
                 text = icon,
-                fontSize = 48.sp
+                fontSize = 40.sp
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
                 text = "$greeting, ${userName.ifBlank { "Boss" }}!",
                 color = Gold,
-                fontSize = 23.sp,
+                fontSize = 21.sp,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(22.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             Text(
                 text = "Your assistant is ready for you.",
                 color = MutedText,
-                fontSize = 15.sp,
+                fontSize = 13.sp,
                 textAlign = TextAlign.Center
             )
         }
