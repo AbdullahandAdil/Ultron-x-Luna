@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -13,7 +12,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,11 +71,6 @@ fun HomeScreen(
         mutableIntStateOf(readBattery(context))
     }
 
-    var selectedCountry by remember { mutableStateOf("India") }
-    var selectedState by remember { mutableStateOf("Uttar Pradesh") }
-    var showCountryDialog by remember { mutableStateOf(false) }
-    var showStateDialog by remember { mutableStateOf(false) }
-
     LaunchedEffect(Unit) {
         while (true) {
             dateTime = LocalDateTime.now()
@@ -118,7 +113,8 @@ fun HomeScreen(
         )
     )
 
-    // Subtle character breathing animation
+    // CHARACTER BREATHING ANIMATION
+
     val characterTransition = rememberInfiniteTransition(
         label = "characterBreathing"
     )
@@ -127,7 +123,10 @@ fun HomeScreen(
         initialValue = 0.985f,
         targetValue = 1.015f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1800, easing = FastOutSlowInEasing),
+            animation = tween(
+                1800,
+                easing = FastOutSlowInEasing
+            ),
             repeatMode = RepeatMode.Reverse
         ),
         label = "characterScale"
@@ -206,13 +205,13 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // GREETING - RIGHT SIDE
+            // GREETING - LEFT SIDE
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.075f),
-                contentAlignment = Alignment.Centerstart
+                contentAlignment = Alignment.CenterStart
             ) {
                 Text(
                     text = buildAnnotatedString {
@@ -258,12 +257,18 @@ fun HomeScreen(
                         .shadow(
                             elevation = 24.dp,
                             shape = CircleShape,
-                            ambientColor = themeColor.copy(alpha = glowAlpha),
-                            spotColor = themeColor.copy(alpha = glowAlpha)
+                            ambientColor = themeColor.copy(
+                                alpha = glowAlpha
+                            ),
+                            spotColor = themeColor.copy(
+                                alpha = glowAlpha
+                            )
                         )
                         .border(
                             width = 2.dp,
-                            color = themeColor.copy(alpha = glowAlpha),
+                            color = themeColor.copy(
+                                alpha = glowAlpha
+                            ),
                             shape = CircleShape
                         )
                         .padding(5.dp)
@@ -282,7 +287,7 @@ fun HomeScreen(
                 }
             }
 
-            // CHARACTER NAME AND VOICE TEXT
+            // CHARACTER NAME AND VOICE STATUS
 
             Column(
                 modifier = Modifier
@@ -377,45 +382,22 @@ fun HomeScreen(
                             .fillMaxHeight()
                             .clip(RoundedCornerShape(20.dp))
                             .background(HomeCard)
-                            .padding(9.dp)
+                            .padding(9.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-    text = "WORLD MAP",
-    color = themeColor,
-    fontSize = 13.sp,
-    fontWeight = FontWeight.Bold,
-    letterSpacing = 1.sp,
-    modifier = Modifier.fillMaxWidth(),
-    textAlign = TextAlign.Center
-)
+                            text = "WORLD MAP",
+                            color = themeColor,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 1.sp,
+                            modifier = Modifier.fillMaxWidth(),
+                            textAlign = TextAlign.Center
+                        )
 
-                        Spacer(modifier = Modifier.height(5.dp))
-
-                        TextButton(
-                            onClick = { showCountryDialog = true },
-                            contentPadding = PaddingValues(0.dp),
-                            modifier = Modifier.height(27.dp)
-                        ) {
-                            Text(
-                                text = "🌐 $selectedCountry",
-                                color = Color.White,
-                                fontSize = 10.sp,
-                                maxLines = 1
-                            )
-                        }
-
-                        TextButton(
-                            onClick = { showStateDialog = true },
-                            contentPadding = PaddingValues(0.dp),
-                            modifier = Modifier.height(25.dp)
-                        ) {
-                            Text(
-                                text = "⌄ $selectedState",
-                                color = Color(0xFFB8C8DC),
-                                fontSize = 10.sp,
-                                maxLines = 1
-                            )
-                        }
+                        Spacer(
+                            modifier = Modifier.height(7.dp)
+                        )
 
                         HolographicWorldMap(
                             modifier = Modifier
@@ -437,108 +419,6 @@ fun HomeScreen(
             onPageSelected = onNavigate
         )
     }
-
-    // COUNTRY SELECTOR
-
-    if (showCountryDialog) {
-        val countries = listOf(
-            "India",
-            "United States",
-            "United Kingdom",
-            "United Arab Emirates",
-            "Saudi Arabia",
-            "Pakistan",
-            "Bangladesh",
-            "Canada",
-            "Australia",
-            "Japan",
-            "Other"
-        )
-
-        AlertDialog(
-            onDismissRequest = { showCountryDialog = false },
-            title = { Text("Select Country") },
-            text = {
-                Column {
-                    countries.forEach { country ->
-                        TextButton(
-                            onClick = {
-                                selectedCountry = country
-                                selectedState = "Select state"
-                                showCountryDialog = false
-                            }
-                        ) {
-                            Text(country, color = Color.White)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { showCountryDialog = false }
-                ) {
-                    Text("Close")
-                }
-            },
-            containerColor = HomeCard,
-            titleContentColor = HoloBlue,
-            textContentColor = Color.White
-        )
-    }
-
-    // STATE SELECTOR
-
-    if (showStateDialog) {
-        val states = if (selectedCountry == "India") {
-            listOf(
-                "Uttar Pradesh",
-                "Delhi",
-                "Bihar",
-                "Maharashtra",
-                "Madhya Pradesh",
-                "Rajasthan",
-                "West Bengal",
-                "Gujarat",
-                "Punjab",
-                "Haryana",
-                "Other"
-            )
-        } else {
-            listOf(
-                "Select state / region",
-                "Other"
-            )
-        }
-
-        AlertDialog(
-            onDismissRequest = { showStateDialog = false },
-            title = { Text("Select State / Region") },
-            text = {
-                Column {
-                    states.forEach { state ->
-                        TextButton(
-                            onClick = {
-                                selectedState = state
-                                showStateDialog = false
-                            }
-                        ) {
-                            Text(state, color = Color.White)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { showStateDialog = false }
-                ) {
-                    Text("Close")
-                }
-            },
-            containerColor = HomeCard,
-            titleContentColor = HoloBlue,
-            textContentColor = Color.White
-        )
-    }
 }
 
 // INFORMATION CARD
@@ -557,7 +437,10 @@ private fun HomeInfoCard(
             .fillMaxHeight()
             .clip(RoundedCornerShape(20.dp))
             .background(HomeCard)
-            .padding(horizontal = 7.dp, vertical = 9.dp),
+            .padding(
+                horizontal = 7.dp,
+                vertical = 9.dp
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
@@ -618,15 +501,19 @@ private fun readBattery(context: Context): Int {
             BatteryManager.BATTERY_PROPERTY_CAPACITY
         )
 
-        if (level in 0..100) level else {
+        if (level in 0..100) {
+            level
+        } else {
             val intent = context.registerReceiver(
                 null,
                 IntentFilter(Intent.ACTION_BATTERY_CHANGED)
             )
+
             val current = intent?.getIntExtra(
                 BatteryManager.EXTRA_LEVEL,
                 -1
             ) ?: -1
+
             val scale = intent?.getIntExtra(
                 BatteryManager.EXTRA_SCALE,
                 -1
@@ -676,6 +563,7 @@ private fun HolographicWorldMap(
 
         for (i in 1..4) {
             val y = h * i / 5f
+
             drawLine(
                 color = themeColor.copy(alpha = 0.12f),
                 start = Offset(0f, y),
@@ -686,6 +574,7 @@ private fun HolographicWorldMap(
 
         for (i in 1..7) {
             val x = w * i / 8f
+
             drawLine(
                 color = themeColor.copy(alpha = 0.12f),
                 start = Offset(x, 0f),
@@ -740,8 +629,11 @@ private fun HolographicWorldMap(
                     val x = point.first * w
                     val y = point.second * h
 
-                    if (index == 0) moveTo(x, y)
-                    else lineTo(x, y)
+                    if (index == 0) {
+                        moveTo(x, y)
+                    } else {
+                        lineTo(x, y)
+                    }
                 }
                 close()
             }
