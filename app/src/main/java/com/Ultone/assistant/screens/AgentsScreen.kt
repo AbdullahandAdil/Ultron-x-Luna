@@ -2,7 +2,6 @@
 package com.ultone.assistant.screens
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,10 +10,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,88 +21,89 @@ import kotlinx.coroutines.delay
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-private val AgentGold = Color(0xFFD9AE50)
-private val AgentDark = Color(0xFF080B14)
-private val AgentCyan = Color(0xFF24DFFF)
-private val AgentPurple = Color(0xFFBD65FF)
-
-private val Floor = Color(0xFF263447)
-private val FloorDark = Color(0xFF1B293D)
-private val Wall = Color(0xFF64748B)
-private val Wood = Color(0xFF98683D)
-private val Furniture = Color(0xFF40536B)
-private val ScreenGlow = Color(0xFF24DFFF)
+private val Gold = Color(0xFFD9AE50)
+private val Dark = Color(0xFF080B14)
+private val Wall = Color(0xFF68778A)
+private val Floor = Color(0xFF34445A)
+private val Floor2 = Color(0xFF26364B)
+private val Wood = Color(0xFF96643D)
+private val Cyan = Color(0xFF24DFFF)
 
 private data class HouseAgent(
     val name: String,
     val color: Color,
+    val room: Int,
     val x: Float,
     val y: Float,
-    val targetX: Float,
-    val targetY: Float,
-    val room: Int
+    val tx: Float,
+    val ty: Float
+)
+
+private val teamColors = listOf(
+    Color(0xFF398DFF),
+    Color(0xFF398DFF),
+    Color(0xFF42D17A),
+    Color(0xFF42D17A),
+    Color(0xFFBD65FF),
+    Color(0xFFBD65FF),
+    Color(0xFFFFA044),
+    Color(0xFFFFA044),
+    Color(0xFFFF555F),
+    Color(0xFFFF555F)
+)
+
+private val agentNames = listOf(
+    "ORION", "AYRA",
+    "BYTE", "NOVA",
+    "PIXEL", "MIRA",
+    "ECHO", "ZIVA",
+    "TITAN", "ZARA"
 )
 
 @Composable
 fun AgentsScreen() {
 
     val agents = remember {
-        mutableStateListOf(
-            HouseAgent(
-                "RESEARCH",
-                AgentCyan,
-                0.27f, 0.25f,
-                0.34f, 0.30f,
-                0
-            ),
-            HouseAgent(
-                "WRITER",
-                AgentPurple,
-                0.70f, 0.25f,
-                0.76f, 0.30f,
-                0
-            ),
-            HouseAgent(
-                "CREATIVE",
-                Color(0xFFFFC66D),
-                0.25f, 0.73f,
-                0.32f, 0.80f,
-                1
-            ),
-            HouseAgent(
-                "HELPER",
-                Color(0xFF75E6A5),
-                0.73f, 0.73f,
-                0.78f, 0.80f,
-                2
-            )
-        )
+        mutableStateListOf<HouseAgent>().apply {
+            for (i in 0 until 10) {
+                val room = i % 3
+                val p = randomWalkPosition(room)
+                add(
+                    HouseAgent(
+                        name = agentNames[i],
+                        color = teamColors[i],
+                        room = room,
+                        x = p.first,
+                        y = p.second,
+                        tx = p.first,
+                        ty = p.second
+                    )
+                )
+            }
+        }
     }
 
-    // Random movement prototype
     LaunchedEffect(Unit) {
         while (true) {
-            delay(65)
+            delay(55)
 
             for (i in agents.indices) {
-                val agent = agents[i]
-
-                val dx = agent.targetX - agent.x
-                val dy = agent.targetY - agent.y
+                val a = agents[i]
+                val dx = a.tx - a.x
+                val dy = a.ty - a.y
                 val distance = sqrt(dx * dx + dy * dy)
 
-                if (distance < 0.009f) {
-                    val (newX, newY) = randomPosition(agent.room)
-
-                    agents[i] = agent.copy(
-                        targetX = newX,
-                        targetY = newY
+                if (distance < 0.004f) {
+                    val next = randomWalkPosition(a.room)
+                    agents[i] = a.copy(
+                        tx = next.first,
+                        ty = next.second
                     )
                 } else {
-                    val speed = 0.0025f
-                    agents[i] = agent.copy(
-                        x = agent.x + (dx / distance) * speed,
-                        y = agent.y + (dy / distance) * speed
+                    val speed = 0.0013f
+                    agents[i] = a.copy(
+                        x = a.x + dx / distance * speed,
+                        y = a.y + dy / distance * speed
                     )
                 }
             }
@@ -113,51 +113,50 @@ fun AgentsScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(AgentDark)
-            .padding(horizontal = 10.dp, vertical = 8.dp)
+            .background(Dark)
+            .padding(horizontal = 8.dp, vertical = 5.dp)
     ) {
-
-        // HEADER
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 5.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .height(32.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "AGENT HEADQUARTERS",
-                color = AgentGold,
-                fontSize = 21.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
+                "ULTRON x LUNA",
+                color = Gold,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = "Your AI agents are living here",
-                color = Color.LightGray,
-                fontSize = 11.sp
+                "VIRTUAL AI HOUSE",
+                color = Color.White,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                "10 AGENTS  •  ONLINE",
+                color = Cyan,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // HOUSE MAP
         Box(
             modifier = Modifier
-                .fillMaxWidth()
                 .weight(1f)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFF101A29))
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFF111C2B))
         ) {
-
-            Canvas(
-                modifier = Modifier.fillMaxSize()
-            ) {
-
-                drawHouse()
+            Canvas(Modifier.fillMaxSize()) {
+                drawHouseMap()
 
                 agents.forEach { agent ->
-                    drawAgent(
+                    drawPixelAgent(
                         x = agent.x * size.width,
                         y = agent.y * size.height,
                         color = agent.color
@@ -166,200 +165,244 @@ fun AgentsScreen() {
             }
         }
 
-        Spacer(modifier = Modifier.height(9.dp))
-
-        // AGENT STATUS
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(32.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AgentStatus("4 AGENTS", AgentCyan)
-            AgentStatus("RANDOM ACTIVITY", AgentPurple)
-            AgentStatus("ONLINE", Color(0xFF75E6A5))
+            BottomItem("AGENTS", Cyan)
+            BottomItem("TASKS", Gold)
+            BottomItem("INVENTORY", Color.White)
+            BottomItem("SETTINGS", Color.White)
         }
-
-        Spacer(modifier = Modifier.height(5.dp))
     }
 }
 
 @Composable
-private fun AgentStatus(
-    text: String,
+private fun BottomItem(
+    title: String,
     color: Color
 ) {
     Text(
-        text = text,
+        text = title,
         color = color,
-        fontSize = 9.sp,
-        fontWeight = FontWeight.Bold,
-        letterSpacing = 0.5.sp
+        fontSize = 10.sp,
+        fontWeight = FontWeight.Bold
     )
 }
 
-private fun randomPosition(room: Int): Pair<Float, Float> {
-
+private fun randomWalkPosition(room: Int): Pair<Float, Float> {
     return when (room) {
-
-        // Work Room
         0 -> Pair(
-            Random.nextFloat() * 0.60f + 0.18f,
-            Random.nextFloat() * 0.20f + 0.17f
+            Random.nextFloat() * 0.39f + 0.06f,
+            Random.nextFloat() * 0.10f + 0.12f
         )
 
-        // Sleeping Room
         1 -> Pair(
-            Random.nextFloat() * 0.28f + 0.12f,
-            Random.nextFloat() * 0.19f + 0.68f
+            Random.nextFloat() * 0.39f + 0.55f,
+            Random.nextFloat() * 0.10f + 0.12f
         )
 
-        // Relax Room
         else -> Pair(
-            Random.nextFloat() * 0.28f + 0.59f,
-            Random.nextFloat() * 0.19f + 0.68f
+            Random.nextFloat() * 0.38f + 0.06f,
+            Random.nextFloat() * 0.12f + 0.70f
         )
     }
 }
 
-private fun DrawScope.drawHouse() {
-
+private fun DrawScope.drawHouseMap() {
     val w = size.width
     val h = size.height
 
-    fun px(x: Float) = x * w
-    fun py(y: Float) = y * h
+    fun x(v: Float) = v * w
+    fun y(v: Float) = v * h
 
-    // Outer floor
-    drawRect(
-        color = Wall,
-        topLeft = Offset(px(0.055f), py(0.065f)),
-        size = Size(px(0.89f), py(0.87f))
-    )
-
-    drawRect(
-        color = Floor,
-        topLeft = Offset(px(0.07f), py(0.08f)),
-        size = Size(px(0.86f), py(0.84f))
-    )
-
-    // WORK ROOM
-    drawRect(
-        color = FloorDark,
-        topLeft = Offset(px(0.085f), py(0.095f)),
-        size = Size(px(0.83f), py(0.31f))
-    )
-
-    // Corridor
-    drawRect(
-        color = Wood,
-        topLeft = Offset(px(0.085f), py(0.415f)),
-        size = Size(px(0.83f), py(0.15f))
-    )
-
-    drawRect(
-        color = Color(0xFFB1804D),
-        topLeft = Offset(px(0.095f), py(0.425f)),
-        size = Size(px(0.81f), py(0.13f)
+    fun rect(
+        color: Color,
+        left: Float,
+        top: Float,
+        width: Float,
+        height: Float
+    ) {
+        drawRect(
+            color = color,
+            topLeft = Offset(x(left), y(top)),
+            size = Size(x(width), y(height))
         )
-    )
+    }
 
-    // Sleeping Room
-    drawRect(
-        color = FloorDark,
-        topLeft = Offset(px(0.085f), py(0.575f)),
-        size = Size(px(0.395f), py(0.33f))
-    )
+    // Outer walls
+    rect(Wall, 0.025f, 0.035f, 0.95f, 0.93f)
+    rect(Floor, 0.035f, 0.05f, 0.93f, 0.90f)
 
-    // Relax Room
-    drawRect(
-        color = FloorDark,
-        topLeft = Offset(px(0.52f), py(0.575f)),
-        size = Size(px(0.395f), py(0.33f))
-    )
+    // Work room
+    rect(Floor2, 0.045f, 0.06f, 0.445f, 0.43f)
 
-    // Work Room Furniture: computers
-    drawComputer(px(0.17f), py(0.17f), px(0.105f), py(0.075f))
-    drawComputer(px(0.39f), py(0.17f), px(0.105f), py(0.075f))
-    drawComputer(px(0.66f), py(0.17f), px(0.105f), py(0.075f))
+    // Sleeping room
+    rect(Floor2, 0.51f, 0.06f, 0.445f, 0.43f)
 
-    // Work desks
-    drawRect(
-        color = Wood,
-        topLeft = Offset(px(0.15f), py(0.255f)),
-        size = Size(px(0.14f), py(0.035f))
-    )
-    drawRect(
-        color = Wood,
-        topLeft = Offset(px(0.37f), py(0.255f)),
-        size = Size(px(0.14f), py(0.035f))
-    )
-    drawRect(
-        color = Wood,
-        topLeft = Offset(px(0.64f), py(0.255f)),
-        size = Size(px(0.14f), py(0.035f))
-    )
+    // Relax room
+    rect(Floor2, 0.045f, 0.53f, 0.445f, 0.40f)
 
-    // Sleeping beds
-    drawBed(px(0.13f), py(0.64f))
-    drawBed(px(0.30f), py(0.64f))
+    // Corridor and entrance
+    rect(Color(0xFF8C6747), 0.51f, 0.53f, 0.435f, 0.40f)
+    rect(Color(0xFFB78A5D), 0.52f, 0.55f, 0.415f, 0.36f)
 
-    // Relax room sofa
-    drawRect(
-        color = Color(0xFF8B5B9B),
-        topLeft = Offset(px(0.62f), py(0.66f)),
-        size = Size(px(0.21f), py(0.075f))
-    )
+    // Room divider walls with door openings
+    rect(Wall, 0.49f, 0.05f, 0.018f, 0.17f)
+    rect(Wall, 0.49f, 0.29f, 0.018f, 0.20f)
 
-    drawRect(
-        color = Color(0xFFB77BC7),
-        topLeft = Offset(px(0.64f), py(0.67f)),
-        size = Size(px(0.17f), py(0.035f))
-    )
+    rect(Wall, 0.045f, 0.495f, 0.18f, 0.025f)
+    rect(Wall, 0.29f, 0.495f, 0.20f, 0.025f)
+
+    rect(Wall, 0.51f, 0.495f, 0.17f, 0.025f)
+    rect(Wall, 0.74f, 0.495f, 0.205f, 0.025f)
+
+    // Work room title
+    pixelText("WORK ROOM", x(0.265f), y(0.085f), 9f)
+
+    // 10 workstations: 5 columns x 2 rows
+    for (row in 0..1) {
+        for (col in 0..4) {
+            val sx = 0.075f + col * 0.080f
+            val sy = 0.13f + row * 0.17f
+
+            drawComputer(x(sx), y(sy), x(0.060f), y(0.075f))
+
+            rect(
+                Wood,
+                sx - 0.004f,
+                sy + 0.078f,
+                0.067f,
+                0.022f
+            )
+
+            // Chair
+            rect(
+                Color(0xFF65758B),
+                sx + 0.018f,
+                sy + 0.105f,
+                0.025f,
+                0.025f
+            )
+        }
+    }
+
+    // Storage cabinets
+    rect(Wood, 0.435f, 0.14f, 0.035f, 0.12f)
+    rect(Color(0xFFB78A5D), 0.438f, 0.15f, 0.029f, 0.045f)
+    rect(Color(0xFFB78A5D), 0.438f, 0.205f, 0.029f, 0.045f)
+
+    // Holographic research display
+    rect(Color(0xFF102D43), 0.425f, 0.31f, 0.05f, 0.08f)
+    rect(Cyan, 0.43f, 0.32f, 0.04f, 0.055f)
+
+    // Sleeping room
+    pixelText("SLEEPING ROOM", x(0.73f), y(0.085f), 9f)
+
+    // 10 beds: 5 columns x 2 rows
+    for (row in 0..1) {
+        for (col in 0..4) {
+            val bx = 0.535f + col * 0.080f
+            val by = 0.13f + row * 0.17f
+            drawBed(x(bx), y(by))
+
+            // Bedside locker
+            rect(
+                Wood,
+                bx + 0.054f,
+                by + 0.015f,
+                0.020f,
+                0.035f
+            )
+
+            // Night lamp
+            rect(
+                Color(0xFFFFD76A),
+                bx + 0.060f,
+                by + 0.020f,
+                0.008f,
+                0.008f
+            )
+        }
+    }
+
+    // Wardrobe and clock
+    rect(Wood, 0.90f, 0.34f, 0.035f, 0.12f)
+    rect(Color(0xFF17243A), 0.91f, 0.35f, 0.015f, 0.09f)
+    rect(Color(0xFFFFD76A), 0.87f, 0.08f, 0.035f, 0.035f)
+
+    // Relax room title
+    pixelText("RELAX ROOM", x(0.265f), y(0.565f), 9f)
+
+    // Two sofas
+    drawSofa(x(0.09f), y(0.64f))
+    drawSofa(x(0.30f), y(0.64f))
 
     // TV
-    drawRect(
-        color = Color(0xFF101820),
-        topLeft = Offset(px(0.67f), py(0.80f)),
-        size = Size(px(0.12f), py(0.045f))
-    )
+    rect(Color(0xFF101820), 0.18f, 0.83f, 0.14f, 0.055f)
+    rect(Cyan, 0.19f, 0.838f, 0.12f, 0.038f)
 
-    drawRect(
-        color = ScreenGlow,
-        topLeft = Offset(px(0.68f), py(0.805f)),
-        size = Size(px(0.10f), py(0.025f))
-    )
+    // Arcade
+    rect(Color(0xFF663A91), 0.07f, 0.78f, 0.065f, 0.11f)
+    rect(Color(0xFFBD65FF), 0.078f, 0.79f, 0.049f, 0.045f)
 
-    // Coffee table
-    drawRect(
-        color = Wood,
-        topLeft = Offset(px(0.68f), py(0.86f)),
-        size = Size(px(0.10f), py(0.025f))
-    )
+    // Aquarium
+    rect(Color(0xFF193D55), 0.37f, 0.78f, 0.085f, 0.10f)
+    rect(Color(0xFF24DFFF), 0.38f, 0.795f, 0.065f, 0.065f)
 
-    // Room labels
-    drawPixelText("WORK ROOM", px(0.50f), py(0.115f), 10f)
-    drawPixelText("CORRIDOR", px(0.50f), py(0.475f), 10f)
-    drawPixelText("SLEEP", px(0.28f), py(0.61f), 9f)
-    drawPixelText("RELAX", px(0.72f), py(0.61f), 9f)
+    // Bookshelf
+    rect(Wood, 0.075f, 0.59f, 0.13f, 0.035f)
+    rect(Color(0xFFFFD76A), 0.085f, 0.595f, 0.018f, 0.025f)
+    rect(Color(0xFFBD65FF), 0.11f, 0.595f, 0.018f, 0.025f)
+    rect(Color(0xFF24DFFF), 0.14f, 0.595f, 0.018f, 0.025f)
 
-    // Room dividing walls
-    drawRect(
-        color = Wall,
-        topLeft = Offset(px(0.075f), py(0.405f)),
-        size = Size(px(0.85f), py(0.008f))
-    )
+    // Refreshment corner
+    rect(Wood, 0.35f, 0.59f, 0.10f, 0.05f)
+    rect(Color(0xFF75E6A5), 0.37f, 0.575f, 0.025f, 0.02f)
 
-    drawRect(
-        color = Wall,
-        topLeft = Offset(px(0.075f), py(0.565f)),
-        size = Size(px(0.85f), py(0.008f))
-    )
+    // Corridor title and entrance
+    pixelText("MAIN CORRIDOR", x(0.73f), y(0.565f), 9f)
 
-    drawRect(
-        color = Wall,
-        topLeft = Offset(px(0.49f), py(0.575f)),
-        size = Size(px(0.015f), py(0.33f))
-    )
+    // Crown emblem
+    drawCrown(x(0.70f), y(0.65f))
+
+    // Task board
+    rect(Color(0xFF182B3C), 0.80f, 0.61f, 0.11f, 0.09f)
+    rect(Cyan, 0.81f, 0.62f, 0.09f, 0.012f)
+    rect(Color(0xFF75E6A5), 0.81f, 0.645f, 0.07f, 0.008f)
+    rect(Color(0xFFFFD76A), 0.81f, 0.665f, 0.08f, 0.008f)
+
+    // Charging station
+    rect(Color(0xFF34445A), 0.56f, 0.77f, 0.09f, 0.09f)
+    rect(Cyan, 0.575f, 0.79f, 0.06f, 0.012f)
+    rect(Cyan, 0.575f, 0.815f, 0.06f, 0.012f)
+
+    // Storage
+    rect(Wood, 0.83f, 0.77f, 0.09f, 0.11f)
+    rect(Color(0xFFB78A5D), 0.84f, 0.78f, 0.07f, 0.04f)
+    rect(Color(0xFFB78A5D), 0.84f, 0.83f, 0.07f, 0.04f)
+
+    // Entrance door
+    rect(Color(0xFF5B3928), 0.69f, 0.89f, 0.11f, 0.035f)
+    rect(Gold, 0.74f, 0.90f, 0.012f, 0.012f)
+
+    // Plants
+    drawPlant(x(0.535f), y(0.60f))
+    drawPlant(x(0.91f), y(0.60f))
+
+    // Decorative floor tiles
+    for (i in 0..7) {
+        rect(
+            Color(0x2289A9C8),
+            0.54f + i * 0.045f,
+            0.73f,
+            0.025f,
+            0.008f
+        )
+    }
 }
 
 private fun DrawScope.drawComputer(
@@ -368,100 +411,162 @@ private fun DrawScope.drawComputer(
     width: Float,
     height: Float
 ) {
-
     drawRect(
-        color = Color(0xFF111827),
-        topLeft = Offset(x, y),
-        size = Size(width, height)
+        Color(0xFF101827),
+        Offset(x, y),
+        Size(width, height)
     )
 
     drawRect(
-        color = ScreenGlow,
-        topLeft = Offset(x + width * 0.10f, y + height * 0.10f),
-        size = Size(width * 0.80f, height * 0.58f)
+        Color(0xFF24DFFF),
+        Offset(x + width * 0.10f, y + height * 0.10f),
+        Size(width * 0.80f, height * 0.60f)
     )
 
     drawRect(
-        color = Color(0xFF101827),
-        topLeft = Offset(x + width * 0.42f, y + height * 0.68f),
-        size = Size(width * 0.16f, height * 0.17f)
-    )
-}
-
-private fun DrawScope.drawBed(
-    x: Float,
-    y: Float
-) {
-
-    drawRect(
-        color = Wood,
-        topLeft = Offset(x, y),
-        size = Size(size.width * 0.115f, size.height * 0.15f)
-    )
-
-    drawRect(
-        color = Color(0xFFCBD5E1),
-        topLeft = Offset(x + size.width * 0.008f, y + size.height * 0.008f),
-        size = Size(size.width * 0.099f, size.height * 0.05f)
-    )
-
-    drawRect(
-        color = Color(0xFF526D91),
-        topLeft = Offset(x + size.width * 0.008f, y + size.height * 0.062f),
-        size = Size(size.width * 0.099f, size.height * 0.078f)
+        Color(0xFFCBD5E1),
+        Offset(x + width * 0.40f, y + height * 0.73f),
+        Size(width * 0.20f, height * 0.12f)
     )
 }
 
-private fun DrawScope.drawAgent(
+private fun DrawScope.drawBed(x: Float, y: Float) {
+    drawRect(
+        Wood,
+        Offset(x, y),
+        Size(size.width * 0.065f, size.height * 0.12f)
+    )
+
+    drawRect(
+        Color(0xFFE2E8F0),
+        Offset(x + size.width * 0.005f, y + size.height * 0.005f),
+        Size(size.width * 0.055f, size.height * 0.035f)
+    )
+
+    drawRect(
+        Color(0xFF526D91),
+        Offset(x + size.width * 0.005f, y + size.height * 0.045f),
+        Size(size.width * 0.055f, size.height * 0.065f)
+    )
+}
+
+private fun DrawScope.drawSofa(x: Float, y: Float) {
+    drawRect(
+        Color(0xFF754B91),
+        Offset(x, y),
+        Size(size.width * 0.13f, size.height * 0.12f)
+    )
+
+    drawRect(
+        Color(0xFFB77BC7),
+        Offset(x + size.width * 0.012f, y + size.height * 0.015f),
+        Size(size.width * 0.106f, size.height * 0.055f)
+    )
+
+    drawRect(
+        Color(0xFF56366F),
+        Offset(x + size.width * 0.015f, y + size.height * 0.08f),
+        Size(size.width * 0.10f, size.height * 0.025f)
+    )
+}
+
+private fun DrawScope.drawPlant(x: Float, y: Float) {
+    drawRect(
+        Wood,
+        Offset(x, y + size.height * 0.035f),
+        Size(size.width * 0.035f, size.height * 0.035f)
+    )
+
+    drawRect(
+        Color(0xFF42D17A),
+        Offset(x + size.width * 0.005f, y),
+        Size(size.width * 0.025f, size.height * 0.045f)
+    )
+}
+
+private fun DrawScope.drawCrown(x: Float, y: Float) {
+    val gold = Color(0xFFD9AE50)
+
+    drawRect(
+        gold,
+        Offset(x, y + size.height * 0.035f),
+        Size(size.width * 0.065f, size.height * 0.025f)
+    )
+
+    drawRect(
+        gold,
+        Offset(x + size.width * 0.008f, y + size.height * 0.012f),
+        Size(size.width * 0.012f, size.height * 0.025f)
+    )
+
+    drawRect(
+        gold,
+        Offset(x + size.width * 0.027f, y),
+        Size(size.width * 0.012f, size.height * 0.035f)
+    )
+
+    drawRect(
+        gold,
+        Offset(x + size.width * 0.047f, y + size.height * 0.012f),
+        Size(size.width * 0.012f, size.height * 0.025f)
+    )
+}
+
+private fun DrawScope.drawPixelAgent(
     x: Float,
     y: Float,
     color: Color
 ) {
-
-    val unit = size.width * 0.012f
+    val u = size.width * 0.007f
 
     // Shadow
     drawRect(
-        color = Color(0x66000000),
-        topLeft = Offset(x - unit, y + unit * 2),
-        size = Size(unit * 4, unit * 2)
+        Color(0x88000000),
+        Offset(x - u, y + u * 4),
+        Size(u * 5, u * 2)
     )
 
     // Head
     drawRect(
-        color = color,
-        topLeft = Offset(x, y - unit * 2),
-        size = Size(unit * 3, unit * 3)
+        color,
+        Offset(x, y - u * 3),
+        Size(u * 4, u * 3)
+    )
+
+    // Face
+    drawRect(
+        Color(0xFFFFD8B1),
+        Offset(x + u, y - u * 2),
+        Size(u * 2, u * 2)
     )
 
     // Body
     drawRect(
-        color = Color.White,
-        topLeft = Offset(x + unit * 0.5f, y + unit),
-        size = Size(unit * 2, unit * 2)
+        color,
+        Offset(x + u * 0.5f, y),
+        Size(u * 3, u * 3)
     )
 
     // Legs
     drawRect(
-        color = color,
-        topLeft = Offset(x + unit * 0.5f, y + unit * 3),
-        size = Size(unit, unit * 2)
+        Color(0xFF202A3A),
+        Offset(x + u, y + u * 3),
+        Size(u, u * 2)
     )
 
     drawRect(
-        color = color,
-        topLeft = Offset(x + unit * 1.8f, y + unit * 3),
-        size = Size(unit, unit * 2)
+        Color(0xFF202A3A),
+        Offset(x + u * 2.5f, y + u * 3),
+        Size(u, u * 2)
     )
 }
 
-private fun DrawScope.drawPixelText(
+private fun DrawScope.pixelText(
     text: String,
     centerX: Float,
     centerY: Float,
     textSize: Float
 ) {
-
     drawContext.canvas.nativeCanvas.drawText(
         text,
         centerX,
