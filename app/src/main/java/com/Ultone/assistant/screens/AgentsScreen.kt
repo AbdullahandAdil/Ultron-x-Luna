@@ -23,8 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val HouseBg = Color(0xFF080B14)
-private val HouseGold = Color(0xFFD9AE50)
+private val PixelBg = Color(0xFF080B14)
+private val PixelGold = Color(0xFFD9AE50)
 
 @Composable
 fun AgentsScreen() {
@@ -32,7 +32,7 @@ fun AgentsScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(HouseBg)
+            .background(PixelBg)
     ) {
 
         // HEADER
@@ -50,22 +50,20 @@ fun AgentsScreen() {
                 Icon(
                     Icons.Default.Menu,
                     contentDescription = "Menu",
-                    tint = HouseGold
+                    tint = PixelGold
                 )
             }
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "ULTRON x LUNA",
-                    color = HouseGold,
+                    "ULTRON x LUNA",
+                    color = PixelGold,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = "VIRTUAL AI HOUSE",
+                    "VIRTUAL AI HOUSE",
                     color = Color.LightGray,
                     fontSize = 9.sp,
                     letterSpacing = 2.sp
@@ -76,24 +74,24 @@ fun AgentsScreen() {
                 Icon(
                     Icons.Default.Settings,
                     contentDescription = "Settings",
-                    tint = HouseGold
+                    tint = PixelGold
                 )
             }
         }
 
         Box(
-            modifier = Modifier
+            Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(HouseGold.copy(alpha = 0.55f))
+                .background(PixelGold.copy(alpha = 0.55f))
         )
 
         Spacer(Modifier.height(12.dp))
 
         Text(
-            text = "OUR VIRTUAL WORLD",
+            "OUR VIRTUAL WORLD",
             modifier = Modifier.fillMaxWidth(),
-            color = HouseGold,
+            color = PixelGold,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             letterSpacing = 2.sp,
@@ -102,7 +100,7 @@ fun AgentsScreen() {
 
         Spacer(Modifier.height(12.dp))
 
-        // COMPLETE HOUSE MAP
+        // HOUSE MAP
 
         Box(
             modifier = Modifier
@@ -111,108 +109,87 @@ fun AgentsScreen() {
                 .aspectRatio(16f / 9f)
                 .border(
                     2.dp,
-                    HouseGold,
-                    RoundedCornerShape(5.dp)
+                    PixelGold,
+                    RoundedCornerShape(4.dp)
                 )
-                .background(Color(0xFF202A36))
+                .background(Color(0xFF182332))
         ) {
 
-            HouseMapCanvas(
+            PixelArtHouse(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // ROOM LABELS
-
-            RoomLabel(
-                text = "WORK ROOM",
-                color = Color(0xFF75C9FF),
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(start = 5.dp, top = 4.dp)
+            PixelRoomLabel(
+                "WORK ROOM",
+                Color(0xFF8BD8FF),
+                Modifier.align(Alignment.TopStart).padding(5.dp)
             )
 
-            RoomLabel(
-                text = "SLEEP ROOM",
-                color = Color(0xFFFFD47A),
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(end = 5.dp, top = 4.dp)
+            PixelRoomLabel(
+                "SLEEP ROOM",
+                Color(0xFFFFD78A),
+                Modifier.align(Alignment.TopEnd).padding(5.dp)
             )
 
-            RoomLabel(
-                text = "RELAX ROOM",
-                color = Color(0xFFD6A0FF),
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(start = 5.dp, bottom = 4.dp)
+            PixelRoomLabel(
+                "RELAX ROOM",
+                Color(0xFFE0A4FF),
+                Modifier.align(Alignment.BottomStart).padding(5.dp)
             )
 
-            RoomLabel(
-                text = "ENTRANCE",
-                color = Color(0xFF8DE8D5),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 5.dp, bottom = 4.dp)
+            PixelRoomLabel(
+                "ENTRANCE",
+                Color(0xFF8DE8D5),
+                Modifier.align(Alignment.BottomEnd).padding(5.dp)
             )
         }
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(15.dp))
 
         Text(
-            text = "OUR HOUSE • OUR WORLD",
+            "OUR HOUSE • OUR WORLD",
             modifier = Modifier.fillMaxWidth(),
             color = Color.White,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
 
-        Spacer(Modifier.height(5.dp))
+        Spacer(Modifier.height(7.dp))
 
         Text(
-            text = "A HOME FOR ULTRON, LUNA & THEIR 10 AGENTS",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp),
+            "A HOME FOR ULTRON, LUNA & THEIR 10 AGENTS",
+            modifier = Modifier.fillMaxWidth(),
             color = Color.Gray,
             fontSize = 9.sp,
             letterSpacing = 1.sp,
             textAlign = TextAlign.Center
         )
 
-        Spacer(Modifier.height(12.dp))
-
-        // MAP LEGEND
+        Spacer(Modifier.height(18.dp))
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            LegendItem(Color(0xFF398BFF), "WORK")
-            LegendItem(Color(0xFFFFD47A), "SLEEP")
-            LegendItem(Color(0xFFB56BFF), "RELAX")
+            PixelLegend(Color(0xFF398BFF), "WORK")
+            PixelLegend(Color(0xFFFFD47A), "SLEEP")
+            PixelLegend(Color(0xFFB56BFF), "RELAX")
         }
-
-        Spacer(Modifier.height(12.dp))
     }
 }
 
 @Composable
-private fun RoomLabel(
-    text: String,
+private fun PixelRoomLabel(
+    label: String,
     color: Color,
     modifier: Modifier = Modifier
 ) {
     Text(
-        text = text,
+        label,
         modifier = modifier
-            .background(
-                Color(0xCC101722),
-                RoundedCornerShape(3.dp)
-            )
-            .padding(horizontal = 4.dp, vertical = 2.dp),
+            .background(Color(0xDD101722), RoundedCornerShape(2.dp))
+            .padding(horizontal = 5.dp, vertical = 3.dp),
         color = color,
         fontSize = 7.sp,
         fontWeight = FontWeight.ExtraBold
@@ -220,23 +197,16 @@ private fun RoomLabel(
 }
 
 @Composable
-private fun LegendItem(
-    color: Color,
-    name: String
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+private fun PixelLegend(color: Color, name: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
         Box(
-            modifier = Modifier
-                .size(8.dp)
-                .background(color, RoundedCornerShape(2.dp))
+            Modifier
+                .size(9.dp)
+                .background(color, RoundedCornerShape(1.dp))
         )
-
         Spacer(Modifier.width(5.dp))
-
         Text(
-            text = name,
+            name,
             color = Color.LightGray,
             fontSize = 9.sp,
             fontWeight = FontWeight.Bold
@@ -244,416 +214,377 @@ private fun LegendItem(
     }
 }
 
-// --------------------------------------------------
-// GBA STYLE HOUSE MAP
-// --------------------------------------------------
+// ==================================================
+// TRUE LOW-RESOLUTION PIXEL ART HOUSE
+// Logical drawing resolution: 320 x 180 pixels
+// ==================================================
 
 @Composable
-private fun HouseMapCanvas(
-    modifier: Modifier = Modifier
-) {
+private fun PixelArtHouse(modifier: Modifier = Modifier) {
 
     Canvas(modifier = modifier) {
 
-        val w = size.width
-        val h = size.height
+        val unit = minOf(size.width / 320f, size.height / 180f)
+        val offsetX = (size.width - 320f * unit) / 2f
+        val offsetY = (size.height - 180f * unit) / 2f
 
-        fun block(
-            x: Float,
-            y: Float,
-            width: Float,
-            height: Float,
+        fun p(
+            x: Int,
+            y: Int,
+            width: Int,
+            height: Int,
             color: Color
         ) {
             drawRect(
                 color = color,
-                topLeft = Offset(w * x, h * y),
-                size = Size(w * width, h * height)
+                topLeft = Offset(
+                    offsetX + x * unit,
+                    offsetY + y * unit
+                ),
+                size = Size(width * unit, height * unit)
             )
         }
 
-        // BASE FLOOR
+        // PALETTE
 
-        block(0f, 0f, 1f, 1f, Color(0xFF172331))
+        val wall = Color(0xFF293D52)
+        val darkWall = Color(0xFF172738)
+        val wood = Color(0xFF986744)
+        val woodDark = Color(0xFF593D31)
+        val floorBlue = Color(0xFF345775)
+        val floorPink = Color(0xFF76566C)
+        val floorPurple = Color(0xFF654B7F)
+        val floorGreen = Color(0xFF426F68)
 
-        // PIXEL FLOOR TILES
+        // OUTER WALL AND FLOOR
 
-        for (row in 0 until 16) {
-            for (col in 0 until 32) {
+        p(0, 0, 320, 180, Color(0xFF111C29))
+        p(3, 3, 314, 174, Color(0xFFB38A52))
+        p(5, 5, 310, 170, Color(0xFF172331))
 
-                val x = col / 32f
-                val y = row / 16f
+        // TOP-LEFT WORK ROOM
 
-                val tileColor =
-                    if ((row + col) % 2 == 0)
-                        Color(0xFF263647)
-                    else
-                        Color(0xFF293A4B)
+        p(7, 7, 148, 77, darkWall)
+        p(10, 10, 142, 70, wall)
+        p(10, 10, 142, 5, Color(0xFF688AA5))
+        p(10, 10, 4, 70, Color(0xFF688AA5))
+        p(148, 10, 4, 70, Color(0xFF1B2A3A))
 
-                block(
-                    x, y,
-                    1f / 32f,
-                    1f / 16f,
-                    tileColor
-                )
+        // WORK FLOOR TILES
+
+        for (y in 17 until 80 step 8) {
+            for (x in 14 until 149 step 8) {
+                val c = if ((x + y) % 16 == 0)
+                    Color(0xFF385F7B)
+                else
+                    floorBlue
+                p(x, y, 7, 7, c)
             }
         }
 
-        // WALL OUTLINE
-
-        block(0.01f, 0.015f, 0.98f, 0.025f, Color(0xFFB38A52))
-        block(0.01f, 0.96f, 0.98f, 0.025f, Color(0xFFB38A52))
-        block(0.01f, 0.015f, 0.018f, 0.97f, Color(0xFFB38A52))
-        block(0.972f, 0.015f, 0.018f, 0.97f, Color(0xFFB38A52))
-
-        // WORK ROOM FLOOR
-
-        block(0.025f, 0.055f, 0.455f, 0.405f, Color(0xFF31516B))
-
-        // WORK ROOM WALLS
-
-        block(0.025f, 0.055f, 0.455f, 0.025f, Color(0xFF7898AC))
-        block(0.025f, 0.055f, 0.012f, 0.405f, Color(0xFF7898AC))
-        block(0.468f, 0.055f, 0.012f, 0.405f, Color(0xFF7898AC))
-
-        // WORK ROOM TILE DETAILS
-
-        for (i in 0 until 6) {
-            block(
-                0.04f + i * 0.07f,
-                0.41f,
-                0.065f,
-                0.025f,
-                Color(0xFF29445D)
-            )
-        }
-
-        // TEN COMPUTER DESKS
+        // TEN DESKS AND COMPUTERS
 
         for (i in 0 until 10) {
 
             val col = i % 5
             val row = i / 5
 
-            val x = 0.045f + col * 0.084f
-            val y = 0.12f + row * 0.135f
+            val x = 17 + col * 25
+            val y = 20 + row * 27
 
-            // DESK
+            // Desk shadow
+            p(x - 1, y + 15, 21, 3, Color(0xFF233B50))
 
-            block(
-                x, y + 0.065f,
-                0.065f, 0.026f,
-                Color(0xFF79563D)
-            )
+            // Desk top
+            p(x, y + 11, 19, 4, wood)
+            p(x, y + 11, 19, 1, Color(0xFFC08A57))
+            p(x + 2, y + 15, 2, 4, woodDark)
+            p(x + 15, y + 15, 2, 4, woodDark)
 
-            block(
-                x + 0.005f, y + 0.085f,
-                0.008f, 0.025f,
-                Color(0xFF543C32)
-            )
-
-            block(
-                x + 0.052f, y + 0.085f,
-                0.008f, 0.025f,
-                Color(0xFF543C32)
-            )
-
-            // MONITOR
-
-            block(
-                x + 0.012f, y,
-                0.043f, 0.055f,
-                Color(0xFF101722)
-            )
-
-            block(
-                x + 0.016f, y + 0.006f,
-                0.035f, 0.041f,
-                Color(0xFF35C9E8)
-            )
-
-            block(
-                x + 0.023f, y + 0.055f,
-                0.020f, 0.010f,
-                Color(0xFFB5C5D5)
-            )
-
-            // SCREEN LIGHT
-
-            block(
-                x + 0.021f, y + 0.013f,
-                0.025f, 0.004f,
-                Color(0xFFB1F7FF)
-            )
+            // Monitor casing
+            p(x + 4, y, 12, 10, Color(0xFF101923))
+            p(x + 5, y + 1, 10, 7, Color(0xFF40C7E7))
+            p(x + 6, y + 2, 8, 1, Color(0xFFB5F7FF))
+            p(x + 9, y + 8, 2, 3, Color(0xFF899BAF))
         }
 
-        // CENTRAL COMMAND TABLE
+        // COMMAND TABLE
 
-        block(0.18f, 0.36f, 0.16f, 0.045f, Color(0xFF815B3D))
-        block(0.19f, 0.355f, 0.14f, 0.015f, Color(0xFFFFD47A))
-        block(0.20f, 0.37f, 0.12f, 0.008f, Color(0xFF3C2C25))
+        p(67, 69, 61, 9, Color(0xFF533A2C))
+        p(68, 68, 59, 6, Color(0xFFB68B55))
+        p(72, 70, 50, 2, Color(0xFFE6BD75))
+        p(75, 77, 3, 4, woodDark)
+        p(117, 77, 3, 4, woodDark)
 
         // STORAGE CABINETS
 
-        for (i in 0 until 2) {
-            val x = if (i == 0) 0.035f else 0.425f
-
-            block(x, 0.335f, 0.038f, 0.075f, Color(0xFF604537))
-            block(x + 0.004f, 0.343f, 0.030f, 0.027f, Color(0xFF986A48))
-            block(x + 0.004f, 0.377f, 0.030f, 0.027f, Color(0xFF986A48))
-            block(x + 0.017f, 0.353f, 0.005f, 0.005f, HouseGold)
-            block(x + 0.017f, 0.388f, 0.005f, 0.005f, HouseGold)
+        for (x in listOf(13, 132)) {
+            p(x, 61, 12, 13, woodDark)
+            p(x + 1, 62, 10, 5, wood)
+            p(x + 1, 68, 10, 5, Color(0xFF80583D))
+            p(x + 5, 64, 2, 2, PixelGold)
+            p(x + 5, 70, 2, 2, PixelGold)
         }
 
-        // RESEARCH DISPLAY
+        // RESEARCH HOLOGRAM
 
-        block(0.18f, 0.09f, 0.15f, 0.025f, Color(0xFF101722))
-        block(0.185f, 0.095f, 0.14f, 0.015f, Color(0xFF4CE2F0))
-        block(0.20f, 0.098f, 0.035f, 0.005f, Color.White)
+        p(109, 17, 31, 13, Color(0xFF17232D))
+        p(111, 19, 27, 8, Color(0xFF47D7EB))
+        p(114, 21, 18, 2, Color(0xFFB8FFFF))
+        p(119, 30, 12, 2, Color(0xFF8C9BA8))
 
         // TASK BOARD
 
-        block(0.35f, 0.09f, 0.10f, 0.065f, Color(0xFF8C6745))
-        block(0.36f, 0.10f, 0.08f, 0.045f, Color(0xFF263B48))
-        block(0.37f, 0.11f, 0.05f, 0.005f, Color(0xFF6FE2C1))
-        block(0.37f, 0.125f, 0.06f, 0.005f, Color(0xFFFFD47A)
-        )
+        p(119, 15, 27, 15, Color(0xFF563D30))
+        p(121, 17, 23, 10, Color(0xFF243A48))
+        p(124, 19, 16, 2, Color(0xFF66E0C1))
+        p(124, 23, 12, 2, Color(0xFFFFD47A))
 
-        // SLEEPING ROOM
+        // TOP-RIGHT SLEEPING ROOM
 
-        block(0.515f, 0.055f, 0.46f, 0.405f, Color(0xFF604B50))
+        p(165, 7, 148, 77, Color(0xFF44343D))
+        p(168, 10, 142, 70, Color(0xFF604A50))
+        p(168, 10, 142, 5, Color(0xFFAC817B))
+        p(168, 10, 4, 70, Color(0xFFAC817B))
 
-        block(0.515f, 0.055f, 0.46f, 0.025f, Color(0xFFC49A80))
-        block(0.515f, 0.055f, 0.012f, 0.405f, Color(0xFFC49A80))
-        block(0.963f, 0.055f, 0.012f, 0.405f, Color(0xFFC49A80))
+        // SLEEP ROOM FLOOR TILES
 
-        // TEN INDIVIDUAL BEDS
+        for (y in 17 until 80 step 8) {
+            for (x in 172 until 309 step 8) {
+                val c = if ((x + y) % 16 == 0)
+                    Color(0xFF73575B)
+                else
+                    floorPink
+                p(x, y, 7, 7, c)
+            }
+        }
+
+        // TEN BEDS
 
         for (i in 0 until 10) {
 
             val col = i % 5
             val row = i / 5
 
-            val x = 0.535f + col * 0.085f
-            val y = 0.115f + row * 0.155f
+            val x = 174 + col * 27
+            val y = 20 + row * 29
 
-            // BED FRAME
+            // Bed shadow
+            p(x - 1, y + 13, 22, 4, Color(0xFF332A34))
 
-            block(
-                x, y,
-                0.072f, 0.09f,
-                Color(0xFF33252B)
-            )
+            // Bed frame
+            p(x, y, 20, 16, Color(0xFF392832))
+            p(x + 1, y + 1, 18, 14, Color(0xFFD7C1AA))
 
-            // MATTRESS
+            // Pillow
+            p(x + 3, y + 2, 14, 4, Color(0xFFFFE8CF))
+            p(x + 4, y + 3, 12, 2, Color(0xFFF5DDC2))
 
-            block(
-                x + 0.004f, y + 0.004f,
-                0.064f, 0.082f,
-                Color(0xFFD6C5B5)
-            )
+            // Blanket
+            p(x + 2, y + 7, 16, 7, Color(0xFF88638D))
+            p(x + 2, y + 7, 16, 2, Color(0xFFB78AC1))
+            p(x + 3, y + 11, 14, 1, Color(0xFF684A78))
 
-            // PILLOW
+            // Locker
+            p(x + 17, y + 12, 5, 6, woodDark)
+            p(x + 18, y + 13, 3, 3, wood)
+            p(x + 19, y + 14, 1, 1, PixelGold)
 
-            block(
-                x + 0.010f, y + 0.008f,
-                0.052f, 0.022f,
-                Color(0xFFFFEAD5)
-            )
-
-            // BLANKET
-
-            block(
-                x + 0.009f, y + 0.037f,
-                0.054f, 0.041f,
-                Color(0xFF87618E)
-            )
-
-            // BLANKET DETAIL
-
-            block(
-                x + 0.009f, y + 0.037f,
-                0.054f, 0.005f,
-                Color(0xFFB78CC2)
-            )
-
-            // BEDSIDE LOCKER
-
-            block(
-                x + 0.052f, y + 0.078f,
-                0.018f, 0.023f,
-                Color(0xFF986E4A)
-            )
-
-            // NIGHT LAMP
-
-            block(
-                x + 0.057f, y + 0.070f,
-                0.009f, 0.008f,
-                Color(0xFFFFE18A)
-            )
+            // Night lamp
+            p(x + 18, y + 9, 3, 2, Color(0xFFFFD87A))
         }
 
         // WARDROBE
 
-        block(0.90f, 0.31f, 0.055f, 0.12f, Color(0xFF76513E))
-        block(0.905f, 0.315f, 0.022f, 0.11f, Color(0xFFA87A51))
-        block(0.932f, 0.315f, 0.018f, 0.11f, Color(0xFFA87A51))
-        block(0.926f, 0.36f, 0.004f, 0.01f, HouseGold)
+        p(290, 57, 16, 23, Color(0xFF50372D))
+        p(292, 59, 6, 19, Color(0xFFAE7950))
+        p(300, 59, 5, 19, Color(0xFF966443))
+        p(298, 66, 2, 3, PixelGold)
 
         // WALL CLOCK
 
-        block(0.84f, 0.09f, 0.055f, 0.045f, Color(0xFF272A35))
-        block(0.85f, 0.098f, 0.035f, 0.029f, Color(0xFFFFE2A1))
-        block(0.867f, 0.102f, 0.003f, 0.015f, Color(0xFF41362C))
+        p(273, 16, 17, 15, Color(0xFF2C2930))
+        p(275, 18, 13, 11, Color(0xFFFFE4A6))
+        p(281, 20, 1, 7, Color(0xFF5C4733))
+        p(281, 23, 5, 1, Color(0xFF5C4733))
 
         // RELAX ROOM
 
-        block(0.025f, 0.535f, 0.455f, 0.405f, Color(0xFF57416F))
+        p(7, 94, 148, 80, Color(0xFF332A48))
+        p(10, 97, 142, 74, Color(0xFF57416F))
+        p(10, 97, 142, 4, Color(0xFFAE86C9))
+        p(10, 97, 4, 74, Color(0xFFAE86C9))
 
-        block(0.025f, 0.535f, 0.455f, 0.025f, Color(0xFFB28ACB))
-        block(0.025f, 0.535f, 0.012f, 0.405f, Color(0xFFB28ACB))
-        block(0.468f, 0.535f, 0.012f, 0.405f, Color(0xFFB28ACB))
+        // RELAX FLOOR TILES
+
+        for (y in 104 until 170 step 8) {
+            for (x in 14 until 149 step 8) {
+                val c = if ((x + y) % 16 == 0)
+                    Color(0xFF735A8B)
+                else
+                    floorPurple
+                p(x, y, 7, 7, c)
+            }
+        }
 
         // SOFA ONE
 
-        block(0.065f, 0.645f, 0.19f, 0.09f, Color(0xFF8956B4))
-        block(0.055f, 0.65f, 0.025f, 0.075f, Color(0xFFC18CEB))
-        block(0.245f, 0.65f, 0.025f, 0.075f, Color(0xFFC18CEB))
-        block(0.08f, 0.655f, 0.16f, 0.025f, Color(0xFFD8B7F1))
-        block(0.08f, 0.695f, 0.16f, 0.025f, Color(0xFF68418A))
+        p(20, 120, 68, 18, Color(0xFFB179D5))
+        p(17, 122, 7, 14, Color(0xFFD49AEF))
+        p(85, 122, 7, 14, Color(0xFFD49AEF))
+        p(25, 123, 57, 5, Color(0xFFE2B9F4))
+        p(27, 132, 53, 4, Color(0xFF8654B2))
+        p(25, 138, 5, 3, woodDark)
+        p(79, 138, 5, 3, woodDark)
 
         // SOFA TWO
 
-        block(0.065f, 0.79f, 0.19f, 0.09f, Color(0xFF8956B4))
-        block(0.055f, 0.795f, 0.025f, 0.075f, Color(0xFFC18CEB))
-        block(0.245f, 0.795f, 0.025f, 0.075f, Color(0xFFC18CEB))
-        block(0.08f, 0.80f, 0.16f, 0.025f, Color(0xFFD8B7F1))
+        p(20, 145, 68, 17, Color(0xFFB179D5))
+        p(17, 147, 7, 13, Color(0xFFD49AEF))
+        p(85, 147, 7, 13, Color(0xFFD49AEF))
+        p(25, 148, 57, 5, Color(0xFFE2B9F4))
+        p(27, 157, 53, 3, Color(0xFF8654B2))
 
         // TELEVISION
 
-        block(0.315f, 0.60f, 0.125f, 0.095f, Color(0xFF111824))
-        block(0.322f, 0.608f, 0.111f, 0.075f, Color(0xFF35CDE5))
-        block(0.335f, 0.618f, 0.035f, 0.005f, Color(0xFFB7FAFF))
-        block(0.375f, 0.64f, 0.035f, 0.005f, Color(0xFFB7FAFF))
-        block(0.36f, 0.695f, 0.04f, 0.015f, Color(0xFF8793A5))
+        p(105, 113, 42, 29, Color(0xFF171A28))
+        p(108, 116, 36, 22, Color(0xFF38CDE4))
+        p(111, 119, 17, 2, Color(0xFFB5F9FF))
+        p(132, 126, 8, 2, Color(0xFFB5F9FF))
+        p(121, 142, 10, 3, Color(0xFF9C91A8))
 
         // ARCADE MACHINE
 
-        block(0.315f, 0.76f, 0.055f, 0.12f, Color(0xFF29223D))
-        block(0.321f, 0.77f, 0.043f, 0.04f, Color(0xFFFF65D5))
-        block(0.328f, 0.78f, 0.03f, 0.018f, Color(0xFF282B52))
-        block(0.331f, 0.825f, 0.025f, 0.008f, Color(0xFFFFD75E)
-        )
-        block(0.332f, 0.85f, 0.02f, 0.025f, Color(0xFF181A28))
+        p(108, 144, 17, 25, Color(0xFF241D35))
+        p(110, 146, 13, 10, Color(0xFFFF70D8))
+        p(112, 148, 9, 5, Color(0xFF24284C))
+        p(113, 159, 3, 2, Color(0xFFFFD75E))
+        p(119, 159, 3, 2, Color(0xFFFFD75E))
+        p(113, 164, 8, 3, Color(0xFF171827))
 
         // AQUARIUM
 
-        block(0.39f, 0.765f, 0.07f, 0.095f, Color(0xFF152A3E))
-        block(0.396f, 0.772f, 0.058f, 0.08f, Color(0xFF36B8D4))
-        block(0.40f, 0.785f, 0.015f, 0.008f, Color(0xFFFFC85B))
-        block(0.43f, 0.81f, 0.014f, 0.008f, Color(0xFFFFC85B))
-        block(0.408f, 0.84f, 0.035f, 0.008f, Color(0xFF4FC77A))
+        p(132, 145, 16, 23, Color(0xFF14283B))
+        p(134, 147, 12, 19, Color(0xFF36BBD7))
+        p(136, 151, 4, 2, Color(0xFFFFC85B))
+        p(142, 156, 3, 2, Color(0xFFFFC85B))
+        p(137, 162, 7, 2, Color(0xFF50C879))
 
         // BOOKSHELF
 
-        block(0.035f, 0.56f, 0.035f, 0.075f, Color(0xFF79513C))
-        block(0.04f, 0.565f, 0.025f, 0.015f, Color(0xFF3E9CDB))
-        block(0.04f, 0.582f, 0.025f, 0.015f, Color(0xFFE6A34C))
-        block(0.04f, 0.599f, 0.025f, 0.015f, Color(0xFF9D69CB))
+        p(13, 103, 11, 22, Color(0xFF51372F))
+        p(15, 105, 7, 5, Color(0xFF469BDA))
+        p(15, 111, 7, 5, Color(0xFFE6A34C))
+        p(15, 117, 7, 5, Color(0xFF9D69CB))
 
         // REFRESHMENT CORNER
 
-        block(0.38f, 0.565f, 0.075f, 0.055f, Color(0xFF76513E))
-        block(0.39f, 0.55f, 0.055f, 0.02f, Color(0xFFB88A59))
-        block(0.40f, 0.575f, 0.015f, 0.018f, Color(0xFFFFD47A))
-        block(0.43f, 0.575f, 0.015f, 0.018f, Color(0xFF8DE8D5))
+        p(130, 102, 17, 15, woodDark)
+        p(132, 100, 13, 3, Color(0xFFB88A59))
+        p(134, 105, 4, 6, Color(0xFFFFD47A))
+        p(141, 105, 4, 6, Color(0xFF8DE8D5))
 
         // CENTRAL CORRIDOR
 
-        block(0.485f, 0.48f, 0.03f, 0.48f, Color(0xFFB28A52))
-        block(0.025f, 0.475f, 0.95f, 0.035f, Color(0xFFB28A52))
+        p(153, 5, 12, 170, Color(0xFFB38A52))
+        p(7, 86, 306, 8, Color(0xFFB38A52))
 
-        // ENTRANCE FLOOR
+        // CORRIDOR WALKWAY
 
-        block(0.515f, 0.535f, 0.445f, 0.405f, Color(0xFF3D6260))
+        p(165, 94, 148, 80, Color(0xFF294B4A))
+        p(168, 97, 142, 74, floorGreen)
 
-        // ENTRANCE WALL DECORATION
+        for (y in 104 until 170 step 8) {
+            for (x in 172 until 309 step 8) {
+                val c = if ((x + y) % 16 == 0)
+                    Color(0xFF4B7C72)
+                else
+                    floorGreen
+                p(x, y, 7, 7, c)
+            }
+        }
 
-        block(0.65f, 0.565f, 0.17f, 0.025f, Color(0xFF253C48))
+        // CROWN EMBLEM BACKPLATE
 
-        // CROWN EMBLEM
+        p(214, 105, 44, 8, Color(0xFF2B4148))
 
-        block(0.69f, 0.61f, 0.12f, 0.025f, HouseGold)
-        block(0.70f, 0.575f, 0.025f, 0.04f, HouseGold)
-        block(0.74f, 0.555f, 0.025f, 0.06f, HouseGold)
-        block(0.78f, 0.575f, 0.025f, 0.04f, HouseGold)
+        // GOLD CROWN
 
-        // CROWN JEWELS
-
-        block(0.703f, 0.58f, 0.012f, 0.012f, Color.White)
-        block(0.743f, 0.56f, 0.012f, 0.012f, Color.White)
-        block(0.783f, 0.58f, 0.012f, 0.012f, Color.White)
+        p(224, 113, 25, 4, PixelGold)
+        p(221, 109, 5, 5, PixelGold)
+        p(231, 105, 5, 9, PixelGold)
+        p(242, 109, 5, 5, PixelGold)
+        p(226, 117, 21, 3, Color(0xFFB08037))
+        p(223, 108, 2, 2, Color.White)
+        p(233, 104, 2, 2, Color.White)
+        p(244, 108, 2, 2, Color.White)
 
         // DIGITAL CLOCK
 
-        block(0.84f, 0.565f, 0.10f, 0.065f, Color(0xFF111925))
-        block(0.848f, 0.575f, 0.084f, 0.045f, Color(0xFF183A3B))
-        block(0.86f, 0.59f, 0.06f, 0.008f, Color(0xFF65F3C1))
+        p(274, 105, 27, 16, Color(0xFF111925))
+        p(277, 108, 21, 10, Color(0xFF173C3B))
+        p(280, 112, 15, 2, Color(0xFF65F3C1))
+        p(282, 110, 2, 1, Color(0xFF65F3C1))
 
         // TASK NOTIFICATION DISPLAY
 
-        block(0.65f, 0.70f, 0.17f, 0.09f, Color(0xFF17252E))
-        block(0.66f, 0.71f, 0.15f, 0.07f, Color(0xFF243F4C))
-        block(0.675f, 0.725f, 0.12f, 0.006f, Color(0xFF6FE2C1))
-        block(0.675f, 0.745f, 0.09f, 0.006f, Color(0xFFFFD47A))
-        block(0.675f, 0.765f, 0.105f, 0.006f, Color(0xFF8FCFFF))
+        p(213, 131, 54, 22, Color(0xFF162530))
+        p(216, 134, 48, 16, Color(0xFF284552))
+        p(220, 137, 36, 2, Color(0xFF6FE2C1))
+        p(220, 142, 28, 2, Color(0xFFFFD47A))
+        p(220, 147, 32, 2, Color(0xFF8FCFFF))
 
         // CHARGING STATION
 
-        block(0.84f, 0.70f, 0.09f, 0.075f, Color(0xFF28323C))
-        block(0.85f, 0.71f, 0.07f, 0.055f, Color(0xFF16212B))
-        block(0.86f, 0.72f, 0.05f, 0.008f, Color(0xFF5BE7C1))
-        block(0.86f, 0.74f, 0.05f, 0.008f, Color(0xFF5BE7C1))
+        p(274, 132, 29, 21, Color(0xFF1A2630))
+        p(277, 135, 23, 15, Color(0xFF263B43))
+        p(280, 138, 17, 2, Color(0xFF5BE7C1))
+        p(280, 144, 17, 2, Color(0xFF5BE7C1))
 
         // PLANTS
 
-        for (x in listOf(0.55f, 0.92f)) {
-
-            block(x, 0.85f, 0.035f, 0.045f, Color(0xFF79563D))
-            block(x + 0.005f, 0.81f, 0.025f, 0.045f, Color(0xFF49B86A))
-            block(x - 0.008f, 0.825f, 0.018f, 0.018f, Color(0xFF60D77A))
-            block(x + 0.023f, 0.825f, 0.018f, 0.018f, Color(0xFF60D77A))
+        for (x in listOf(177, 300)) {
+            p(x, 156, 12, 10, woodDark)
+            p(x + 3, 151, 6, 7, Color(0xFF4DAE62))
+            p(x, 153, 5, 5, Color(0xFF65D978))
+            p(x + 8, 151, 5, 5, Color(0xFF65D978))
         }
 
         // ENTRANCE DOOR
 
-        block(0.735f, 0.88f, 0.075f, 0.065f, Color(0xFF69442F))
-        block(0.743f, 0.885f, 0.059f, 0.055f, Color(0xFFB17C4E))
-        block(0.79f, 0.91f, 0.006f, 0.006f, HouseGold)
+        p(243, 156, 23, 17, Color(0xFF4B342A))
+        p(245, 158, 9, 13, Color(0xFFB17C4E))
+        p(256, 158, 8, 13, Color(0xFF986443))
+        p(254, 163, 2, 2, PixelGold)
 
-        // ROOM DIVIDERS
+        // DECORATIVE FLOOR LIGHTS
 
-        block(0.49f, 0.045f, 0.02f, 0.41f, Color(0xFFB28A52))
-        block(0.025f, 0.46f, 0.455f, 0.02f, Color(0xFFB28A52))
-        block(0.515f, 0.46f, 0.445f, 0.02f, Color(0xFFB28A52))
+        for (x in listOf(26, 94, 170, 199, 275)) {
+            p(x, 91, 6, 2, Color(0xFFFFD47A))
+        }
 
-        // DOOR OPENINGS
+        // WALL SHADOWS AND DETAILS
 
-        block(0.205f, 0.455f, 0.09f, 0.03f, Color(0xFF3D6260))
-        block(0.68f, 0.455f, 0.09f, 0.03f, Color(0xFF3D6260))
-        block(0.485f, 0.70f, 0.03f, 0.09f, Color(0xFF3D6260))
+        p(151, 8, 3, 73, Color(0xFF101B28))
+        p(164, 8, 3, 73, Color(0xFF101B28))
+        p(8, 83, 144, 2, Color(0xFF152432))
+        p(168, 83, 143, 2, Color(0xFF342A35))
 
-        // PIXEL LIGHT DETAILS
+        // SMALL PIXEL FLOOR DETAILS
 
-        for (i in 0 until 8) {
+        for (i in 0 until 18) {
+            val x = 14 + (i * 17) % 292
+            val y = 87 + (i * 11) % 85
 
-            val x = 0.08f + i * 0.115f
-
-            block(
-                x, 0.495f,
-                0.018f, 0.008f,
-                Color(0xFFFFD47A)
+            p(
+                x,
+                y,
+                2,
+                2,
+                if (i % 2 == 0)
+                    Color(0xFF5D8278)
+                else
+                    Color(0xFF9B7B62)
             )
         }
     }
